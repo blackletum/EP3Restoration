@@ -1,0 +1,301 @@
+//====== Copyright © 1996-2005, Valve Corporation, All rights reserved. =======
+//
+// Purpose: Half-Life 2 game definition file (.fgd) 
+//
+//=============================================================================
+
+@include "halflife2.fgd"
+
+@PointClass base(Weapon) studio("models/weapons/w_chargegun.mdl") = weapon_teleport : "Teleport Gun" []
+@PointClass base(Weapon) studio("models/weapons/w_chargegun.mdl") = weapon_flamethrower : "Flamethrower" []
+@PointClass base(Weapon) studio("models/weapons/w_models/w_weaponizer.mdl") = weapon_icegun : "Ice gun" []
+@PointClass base(Weapon) studio("models/weapons/w_models/w_weaponizer.mdl") = weapon_egon : "Gluon Gun" []
+@PointClass base(Weapon) studio("models/weapons/w_models/w_weaponizer.mdl") = weapon_gauss : "Tau Cannon" []
+
+@PointClass base(Item) studio("models/items/battery.mdl") = item_ammo_uranium : "Uranium ammo" []
+
+@SolidClass base(Targetname, Origin, EnableDisable) = func_pipe_entrance : "An opening into a system of pipes."
+[
+	pipesystemname(string) : "Pipe System Name" : : "Use the same name for all entrances to a single system."
+	flowrate(float) : "Flow Rate" : 20 : "Number of blob particles that can fit through per second. Transfer speed is the minimum of two entrance's flow rates."
+]
+
+@PointClass base(Targetname, Parentname, Angles) studio("models/editor/axis_helper_thick.mdl") sphere(SearchRange) line(0 192 192, targetname, ApproachPath) = info_blob_spit_target : 
+	"An entity that indicates a position where a blob tentacle can spit from"
+[
+	ApproachPath(target_destination) : "Approach Path" : : "[Optional] A info_blob_spit_path which the tentacle has to follow to use this target."
+	SearchRange(float) : "Search Range" : 128 : "The tentacle will look within this sphere to keep LOS to the enemy."
+]
+
+@PointClass base(Targetname, Parentname, Angles) iconsprite("editor/info_target.vmt") line(255 255 255, targetname, NextPath) = info_blob_spit_path : 
+	"An entity that indicates a position where a blob tentacle can spit from"
+[
+	NextPath(target_destination) : "Next Path" : : "A info_blob_spit_path or info_blob_spit_target which the tentacle has to go to next."
+]
+
+@NPCClass base(BaseNPC) studio("models/blob.mdl") = npc_blob : "Blob"
+[
+	blobType(choices) : "Blob Type" : 0 =
+	[
+		0 : "Generic"
+		1 : "Leaper"
+		2 : "Spitter"
+		3 : "Spawner"
+	]
+	particlecount(integer) : "Particle Count" : 100 : "How many particles to use to simulate the blob."
+	brainParticleCount(integer) : "Brain Particle Count" : 6 : "How many brain particles does this blob have (must be <= than the particle count)?"
+	particle_radius(float) : "Particle Radius" : -1 : "The radius of the blob's particles. Default: 6.5"
+	shakeFastBlobs(boolean) : "Spawn Fast Blobs" : 0
+	startAsBrain(boolean) : "Spawn As Brain Only" : 0
+	canMerge(boolean) : "Can Merge With Other Blobs" : 1
+	
+	input MoveToPosition(target_destination) : "Makes the blob go somewhere"
+	input TestSplit(string) : "Split the blob in half along the X axis. Give the new blob a name."
+	input UnseenTeleport(void) : "Teleport the blob somewhere near the player where they can't see."
+	input OverloadPhysParamState(string) : "Forces the physics parameter state by name from the script file."
+	input RevertPhysParamState(void) : "Allows physics parameter state to be set by internal AI code."
+	input ForceThroughPipe(string) : "Causes the blob to move through a pipe instantly."
+	input AddShapeTarget(string) : "Causes the blob to treat the given entity as a 'shape target', i.e. it will move to match its shape (works with npc_* and shape_target)."
+	input RemoveShapeTarget(string) : "The opposite of AddShapeTarget."
+	input TentacleAttackEntity(string) : "Makes the blob move within range of this entity, then attack it with a tentacle."
+	input EnableShakeBlobs(bool) : "Enable/disable allowing the blob to choose to shake tiny blobs off itself."
+	input EnableTentacleAttack(bool) : "Enable/disable allowing the blob to do its tentacle attack."
+	input EnableSpit(bool) : "Enable/disable allowing the blob to do its spit attack."
+	input EnableLeap(bool) : "Enable/disable allowing the blob to leap at the player."
+	input EnableAutoRegeneration(bool) : "Enable/disable allowing the blob auto-regenerate its particles."
+	input EnableSpawnRegenerators(bool) : "Enable/disable allowing the blob to spawn particle regenerators."
+	input RegenerateParticles(float) : "Regenerate a fraction of the blob's particles. Argument should go from 0-1."
+	
+	output BlobSplit(void) : "This blob was just split. Activator is original blob, Caller is new blob."
+	output BlobFrozen(void) : "This blob was just frozen."
+	output BlobUnfrozen(void) : "This blob was just unfrozen."
+	output OnBlobsShakenOff(void) : "This blob just spawned some tiny blobs"
+	output OnBrainExposed(void) : "The brain for this blob was just exposed"
+	output OnBrainHidden(void) : "The brain for this blob was just hidden by particle regeneration"
+	output OnThreeQuartersArmor(void) : "Invoked when the blob transitions below three quarters of his total armor value"
+]
+
+@NPCClass base(npc_blob) studio("models/blob_tiny.mdl") = npc_blob_tiny : "Blob Tiny"
+[
+	splits(boolean) : "Blob spawns other blobs" : 0
+	fastJumper(boolean) : "Fast Jump" : 0
+	radius(float) : "Radius" : 7
+	maxSplitCount(integer) : "Max Split Count" : 10
+
+	input SplitOnce(float) : "Causes the blob to split exactly one time. Argument specifies how many seconds to wait before splitting"
+]
+
+@NPCClass base(npc_blob) studio("models/blob_small.mdl") = npc_blob_small : "Blob Small"
+[
+
+]
+
+@NPCClass base(npc_blob) studio("models/blob_medium.mdl") = npc_blob_medium : "Blob Medium"
+[
+
+]
+
+@NPCClass base(npc_blob) studio("models/blob_large.mdl") = npc_blob_large : "Blob Large"
+[
+
+]
+
+@PointClass base(Targetname, Angles) studio("models/props_hive/nest_sm_flat.mdl") = blob_regenerator
+[
+]
+
+
+@PointClass base(Targetname, Angles) studio("models/gaspump/gaspump001a.mdl") = gas_pump
+[
+]
+
+@PointClass base(ai_addon) studio("models/props_junk/sawblade001a.mdl") = ai_addon_saw
+[
+]
+
+@NPCClass base(BaseNPC, TalkNPC, PlayerCompanion) studio("models/shield_scanner.mdl") = npc_composite_companion : "Composite Companion"
+[
+	input skin(float) : "Change texture skin"
+	input Snarl(void) : "Make this soldier snarl"
+	input CreateAddon( string ) : "Create and attach addon"
+]
+
+@NPCClass base(BaseNPC) studio("models/soldier_mid.mdl") = npc_soldier_mid : "Mid-size margarita soldier"
+[
+	input skin(float) : "Change texture skin"
+	input Snarl(void) : "Make this soldier snarl"
+	input CreateAddon( string ) : "Create and attach addon"
+]
+
+@NPCClass base(BaseNPC) studio("models/soldier_large.mdl") = npc_soldier_large : "Large margarita soldier"
+[
+	input skin(float) : "Change texture skin"
+	input Snarl(void) : "Make this soldier snarl"
+	input CreateAddon( string ) : "Create and attach addon"
+]
+
+@NPCClass base(BaseNPC) studio("models/soldier_fast.mdl") = npc_soldier_fast : "Fast margarita soldier"
+[
+	input skin(float) : "Change texture skin"
+	input Snarl(void) : "Make this soldier snarl"
+	input CreateAddon( string ) : "Create and attach addon"
+]
+
+@PointClass base(ai_addon) studio("models/addons/propeller.mdl") = ai_addon_propeller
+[
+]
+
+@PointClass base(ai_addon) studio("models/addons/shield_generator.mdl")= ai_addon_shield
+[
+]
+
+@PointClass base(ai_addon) studio("models/addons/dart_gun.mdl")= ai_addon_dartgun
+[
+]
+
+@PointClass base(ai_addon) studio("models/addons/chaingun.mdl")= ai_addon_minigun
+[
+]
+
+@PointClass base(ai_addon) studio("models/addons/rocket_launcher.mdl")= ai_addon_rpg
+[
+]
+
+@PointClass base(ai_addon) studio("models/addons/mortar.mdl") = ai_addon_mortar
+[
+]
+
+@PointClass base(ai_addon) studio("models/addons/brain_tank.mdl") = ai_addon_brain
+[
+]
+
+@PointClass base(ai_addon) studio("models/addons/bomb_hat.mdl") = ai_addon_bomb
+[
+	Target(target_destination) : "Bomb target"
+	TriggerRange(float) : "Trigger range" : "240.0" : "Distance from target to trigger bomb"
+	DetonationTime(float) : "Detonation time" : "5" : "Time to countdown before detonation after triggered"
+	MaxEscorts(float) : "Maximum escorts" : "2" : "Maximum number of squad members to recruit for escort"
+
+	input SetTarget( string ) : "Change target"
+	
+	output OnDetonate(void) : "Fires when this AddOn is detonated by the owner."
+]
+
+@PointClass base(Targetname) = ai_addon_factory
+[
+
+
+	target(target_destination) : "Target NPC or class" : ""
+	
+	StartDisabled(boolean) : "Start Disabled" : 0
+	
+	option1(choices) : "Option 1" : "ai_addon_dartgun" =
+	[
+		"ai_addon_dartgun" : "dartgun"
+		"ai_addon_minigun" : "minigun"
+		"ai_addon_propeller" : "propeller"
+		"ai_addon_bomb" : "bomb"
+		"ai_addon_shield" : "shield"
+		"ai_addon_rpg" : "RPG"
+	]
+	weight1(float) : "Option 1 weight" : 0
+	
+	option2(choices) : "Option 2" : "ai_addon_dartgun" =
+	[
+		"ai_addon_dartgun" : "dartgun"
+		"ai_addon_minigun" : "minigun"
+		"ai_addon_propeller" : "propeller"
+		"ai_addon_bomb" : "bomb"
+		"ai_addon_shield" : "shield"
+		"ai_addon_rpg" : "RPG"
+	]
+	weight2(float) : "Option 2 weight" : 0
+	
+	option3(choices) : "Option 3" : "ai_addon_dartgun" =
+	[
+		"ai_addon_dartgun" : "dartgun"
+		"ai_addon_minigun" : "minigun"
+		"ai_addon_propeller" : "propeller"
+		"ai_addon_bomb" : "bomb"
+		"ai_addon_shield" : "shield"
+		"ai_addon_rpg" : "RPG"
+	]
+	weight3(float) : "Option 3 weight" : 0
+	
+	option4(choices) : "Option 4" : "ai_addon_dartgun" =
+	[
+		"ai_addon_dartgun" : "dartgun"
+		"ai_addon_minigun" : "minigun"
+		"ai_addon_propeller" : "propeller"
+		"ai_addon_bomb" : "bomb"
+		"ai_addon_shield" : "shield"
+		"ai_addon_rpg" : "RPG"
+	]
+	weight4(float) : "Option 4 weight" : 0
+	
+	option5(choices) : "Option 5" : "ai_addon_dartgun" =
+	[
+		"ai_addon_dartgun" : "dartgun"
+		"ai_addon_minigun" : "minigun"
+		"ai_addon_propeller" : "propeller"
+		"ai_addon_bomb" : "bomb"
+		"ai_addon_shield" : "shield"
+		"ai_addon_rpg" : "RPG"
+	]
+	weight5(float) : "Option 5 weight" : 0
+	
+	option6(choices) : "Option 6" : "ai_addon_dartgun" =
+	[
+		"ai_addon_dartgun" : "dartgun"
+		"ai_addon_minigun" : "minigun"
+		"ai_addon_propeller" : "propeller"
+		"ai_addon_bomb" : "bomb"
+		"ai_addon_shield" : "shield"
+		"ai_addon_rpg" : "RPG"
+	]
+	weight6(float) : "Option 6 weight" : 0
+]
+
+@PointClass base(Parentname, Targetname, Angles) studio("models/weapons/hunter_flechette.mdl") = blob_shape_target :
+	"Blob shape target - when enabled, this forms a chain (with other targets of the same 'shape name') that a blob can attach to. If visible, the blob will treat it as food (the blob chases the nearest food item)."
+[
+	startenabled(boolean) : "Start Enabled" : 1 : "If 'yes', this target should be enabled on map spawn (otherwise it will wait for an Enable input)."
+
+	invisible(boolean) : "Invisible" : 0 : "Whether this target should be invisible (the blob will ignore it until receiving the AddShapeTarget input)."
+
+	shapename(string) : "Name of target's Shape" : "" : "All targets with the same Shape Name will be chained together into a Shape"
+	shapesequence(integer) : "Target's sequence number" : -1 : "A target's Sequence Number determines its position in the chain of targets constituting its Shape"
+	shapesize(integer) : "Size of target's Shape" : -1 : "A Shape's size is the maximum number of targets it may contain - adding a new target beyond that size will cause the first added target to be destroyed ('-1' means 'maximum allowed size')"
+
+	input Enable(void) : "Enable the target."
+	input Disable(void): "Disable the target."
+]
+
+@PointClass base(Parentname, Targetname) sphere(radius) studio("models/chefhat.mdl") = blob_trigger :
+	"Blob trigger - when enabled, fires OnStartTouchByBlob output when touched by a blob."
+[
+	startenabled(boolean) : "Start Enabled" : 1 : "If 'yes', this trigger should be enabled on map spawn (otherwise it will wait for an Enable input)."
+
+	radius(float) : "Radius" : -1 : "The radius of this trigger. NOTE: in game, the trigger will be a cube. Default: 8."
+
+	input Enable(void) : "Enable the trigger."
+	input Disable(void): "Disable the trigger."
+
+	output OnStartTouchByBlob(void) : "Fired when this trigger is physically touched by any blob."
+	output OnStartDeliberateTouchByBlob(void) : "If this trigger is parented to an entity, fires when the blob attaches to that entity."
+	output OnEndDeliberateTouchByBlob(void) : "If this trigger is parented to an entity, fires when the blob detaches from that entity."
+]
+
+@PointClass base(Parentname, Targetname) sphere(radius) studio("models/combine_helicopter/helicopter_bomb01.mdl") = blob_repeller :
+	"Blob repeller - when enabled, blobs will be repelled from this point, out to the given radius, for the given duration."
+[
+	startenabled(boolean) : "Start Enabled" : 0 : "If 'yes', this repeller should be enabled on map spawn (the default is to wait for an input - or blob-proximity trigger, if 'shaper_repel_proximity' is set)."
+
+	radius(float) : "Radius" : -1 : "The radius of influence within which this will repel blobs. Default: 8."
+	repelduration(float) : "Repel duration" : -1 : "The duration for which this will repel blobs. Zero means 'infinite'. Default: 5."
+
+	invisible(boolean) : "Invisible" : 0 : "Whether this repeller should be invisible."
+
+	input Enable(void) : "Enable the repeller."
+	input Disable(void): "Disable the repeller."
+]

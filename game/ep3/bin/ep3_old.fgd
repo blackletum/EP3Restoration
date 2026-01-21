@@ -1,0 +1,16 @@
+@include "ep3.fgd"
+
+@NPCClass base(BaseNPC) studio("models/blob_small.mdl") = npc_blob_fountain : "Blob Fountain"
+[
+]
+
+@NPCClass base(BaseNPC) studio("models/blob_small.mdl") = npc_blob_armtest : "Blob Arm Test"
+[
+]
+
+@NPCClass base(BaseNPC) studio("models/blob_small.mdl") = npc_blob_demomonster : "Blob Demo"
+[
+	input MoveToPosition(string) : "Tell the blob to move to an entity"
+	input DoArms(integer) : "Tell the blob to use its arms"
+	input DoContactZ(integer) : "Tell the blob to do contactz"
+]

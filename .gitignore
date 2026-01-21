@@ -1,0 +1,36 @@
+# Files to ignore when considering what GIT should commit.
+
+# Visual Studio 
+*.suo
+*.user
+*.sln.docstates
+*.obj
+*.pch
+*.tlog
+*.log
+*.scc
+*.exp
+*.ilk
+*.lastbuildstate
+vc100.pdb
+vc120.pdb
+vc140.pdb
+ipch
+*.sdf
+*.opensdf
+*.idb
+*.vcxproj
+*.vpc_crc
+*.sln
+*.res
+*.pdb
+.vs/
+Release*/
+Debug*/
+
+*.vpc.sentinel
+*.vpc_cache
+*.vcxproj.*
+
+game/ep3/cfg/config.cfg
+
