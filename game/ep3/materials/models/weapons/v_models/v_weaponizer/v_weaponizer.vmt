@@ -1,5 +1,0 @@
-"VertexlitGeneric"
-{
-	"$basetexture" "models/weapons/v_models/v_weaponizer/v_weaponizer"
-	"$bumpmap" "models/weapons/v_models/v_weaponizer/v_weaponizer_normal"
-}

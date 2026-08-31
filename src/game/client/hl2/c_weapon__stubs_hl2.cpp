@@ -46,6 +46,7 @@ STUB_WEAPON_CLASS( weapon_oldmanharpoon, WeaponOldManHarpoon, C_WeaponCitizenPac
 
 #ifdef HL2_EP3
 STUB_WEAPON_CLASS(weapon_teleport, WeaponTeleport, C_BaseHLCombatWeapon);
+STUB_WEAPON_CLASS(weapon_weaponizer, WeaponWeaponizer, C_BaseHLCombatWeapon);
 #endif
 
 #endif

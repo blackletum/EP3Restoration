@@ -29,6 +29,7 @@
 #include "weapon_physcannon.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 #include "npc_headcrab.h"
+#include "ai_networkmanager.h"
 
 #include "weapon_teleport.h"
 
@@ -3582,6 +3583,784 @@ bool CNPC_Combine::ComputeTeleportToss(
 {
 	Warning("CNPC_Combine::ComputeTeleportToss was called (but its not finished). FIXME\nFIXMEFIXMEFIXME");
 	return true;//false;
+	/*
+		uint* puVar1;
+		//longlong lVar2;
+		//ulonglong* puVar3;
+		//longlong lVar4;
+		//vfunction602* pvVar5;
+		//vfunction535* pvVar6;
+		//vfunction569* pvVar7;
+		//vfunction572* pvVar8;
+		//vfunction663* pvVar9;
+		//vfunction59* pvVar10;
+		short* psVar11;
+		//code* pcVar12;
+		bool bVar13;
+		float fVar14;
+		CNPC_Combine* this_00;
+		float fVar15;
+		//undefined1 extraout_AL;
+		char cVar16;
+		uint uVar17;
+		//undefined4 uVar18;
+		uint uVar19;
+		int iVar20;
+		//longlong* plVar21;
+		//longlong* plVar22;
+		Vector* pfVar23;
+		//undefined8* puVar24;
+		//ulonglong uVar25;
+		//longlong lVar26;
+		//undefined8 uVar27;
+		//longlong lVar28;
+		//longlong lVar29;
+		short sVar30;
+		//ulonglong uVar31;
+		uint uVar32;
+		int iVar33;
+		int iVar34;
+		//undefined1* puVar35;
+		uint uVar36;
+		//longlong lVar37;
+		//longlong lVar38;
+		//longlong lVar39;
+		//ulonglong uVar40;
+		//ulonglong uVar41;
+		CNPC_Combine* this_01;
+		float extraout_XMM0_Da;
+		float fVar42;
+		float fVar43;
+		float fVar44;
+		float fVar45;
+		float fVar46;
+		float fVar47;
+		float fVar48;
+		//undefined8 uStack_440;
+		//undefined1 auStack_438[32];
+		double local_418;
+		float afStack_410[2];
+		//undefined8 local_408;
+		//ulonglong local_400;
+		int local_3f8;
+		//ulonglong local_3f0;
+		float local_3e8;
+		int local_3e4;
+		CNPC_Combine* local_3e0;
+		float local_3d8;
+		float local_3d4;
+		float local_3d0;
+		float local_3c8;
+		float local_3c4;
+		float local_3c0;
+		//ulonglong local_3b8;
+		Vector local_3a8;
+		//undefined8 local_398;
+		//longlong local_390;
+		Vector local_388;
+		Vector local_378;
+		float local_368;
+		float local_364;
+		float local_360;
+		float local_358;
+		//ulonglong local_350;
+		//longlong local_348;
+		float local_340;
+		int iStack_33c;
+		//undefined2 local_338;
+		ushort local_336;
+		//longlong local_330;
+		float local_328;
+		float local_324;
+		float local_320;
+		//undefined8 local_318;
+		float local_30c[13];
+		char local_2d8[12];
+		int local_2cc;
+		char* local_2c8;
+		float local_2c0;
+		float local_2bc[9];
+		int local_298;
+		float* local_290;
+		uint local_288[10];
+		int local_260;
+		uint* local_258;
+		float local_250[10];
+		int local_228;
+		float* local_220;
+		float local_218[10];
+		int local_1f0;
+		float* local_1e8;
+		//ulonglong local_1e0[10];
+		int local_190;
+		//ulonglong* local_188;
+		float local_178[30];
+		int local_100;
+		float* local_f8;
+		//ulonglong local_e8;
+
+		//local_e8 = DAT_180d2a398 ^ (ulonglong)&local_408;
+		//local_408._4_1_ = bPreferCoverPos;
+		local_3e0 = this;
+		local_3c8 = flAngMin;
+		if (m_iTeleportGrenades != 0)
+		{
+			fVar47 = m_flNextTeleportGrenadeTime;
+			if (fVar47 < gpGlobals->curtime || fVar47 == gpGlobals->curtime)
+			{
+				//uStack_440 = 0x180135a30;
+				CBaseEntity* plVar21 = GetEnemy();
+				if (plVar21)
+				{
+					local_3a8 = GetAbsOrigin();
+					//uStack_440 = 0x180135a77;
+					CAI_Enemies* plVar22 = GetEnemies();
+					if (bUseFreeKnowledge)
+					{
+						//uStack_440 = 0x180135a87;
+						pfVar23 = &plVar22->LastKnownPosition(plVar21);
+					}
+					else {
+						//uStack_440 = 0x180135a8e;
+						pfVar23 = &plVar22->LastSeenPosition(plVar21);
+					}
+					fVar47 = pfVar23->z;
+					fVar46 = pfVar23->y;
+					fVar45 = pfVar23->x;
+					fVar48 = pfVar23->x;
+					//uStack_440 = 0x180135ac7;
+					local_3c4 = fVar46;
+					local_3c0 = fVar47;
+					local_358 = fVar45;
+					pfVar23 = (float*)(**(code**)(*plVar21 + 0x488))(plVar21);
+					local_388.x = local_3a8.x - fVar48;
+					local_328 = fVar48 + *pfVar23;
+					local_324 = fVar46 + pfVar23[1];
+					local_320 = fVar47 + pfVar23[2];
+					local_388.y = local_3a8.y - fVar46;
+					local_388.z = local_3a8.z - fVar47;
+					//uStack_440 = 0x180135b39;
+					VectorNormalize(local_388);
+					if (g_pAINetworkManager->NetworksLoaded())
+					{
+						puVar35 = &(this->CAI_BaseNPC_data).field_0x2c8;
+						*(uint*)puVar35 = *(uint*)puVar35 | 8;
+						lVar4 = (this->CAI_BaseNPC_data).offset_0x220[7];
+						uStack_440 = 0x180135b6f;
+						local_348 = lVar4;
+						uVar17 = FUN_18032a0f0((longlong)(this->CAI_BaseNPC_data).offset_0x230, &local_3a8.x);
+						if (uVar17 != 0xffffffff) 
+						{
+							uVar36 = *(uint*)(lVar4 + 8);
+							uVar40 = (ulonglong)(int)uVar36;
+							uVar25 = uVar40 * 8 + 0xf & 0xfffffffffffffff0;
+							uVar31 = uVar25 + 0xf;
+							if (uVar31 <= uVar25) {
+								uVar31 = 0xffffffffffffff0;
+							}
+							uStack_440 = 0x180135c7b;
+							lVar4 = -(uVar31 & 0xfffffffffffffff0);
+							puVar3 = (ulonglong*)((longlong)&local_408 + lVar4);
+							local_408._0_4_ = uVar36;
+							*(undefined8*)(auStack_438 + lVar4 + -8) = 0x180135c94;
+							FUN_180134620(&local_338, uVar36);
+							local_188 = local_1e0;
+							local_190 = 0;
+							local_2c8 = local_2d8;
+							local_2cc = 0;
+							local_1e8 = local_218;
+							local_1f0 = 0;
+							local_220 = local_250;
+							local_228 = 0;
+							local_290 = &local_2c0;
+							local_298 = 0;
+							local_258 = local_288;
+							local_260 = 0;
+							local_190 = 0;
+							local_1f0 = 0;
+							local_228 = 0;
+							local_260 = 0;
+							local_298 = 0;
+							local_2cc = 0;
+							uVar36 = 1;
+							local_f8 = local_178;
+							local_3b8 = 1;
+							local_390 = (longlong)&local_398 + 4;
+							local_100 = 0;
+							local_398 = 0x10020;
+							local_3f0 = (ulonglong)uVar17 << 0x20;
+							*puVar3 = local_3f0;
+							puVar1 = (uint*)(local_330 + ((longlong)(int)uVar17 >> 5) * 4);
+							*puVar1 = *puVar1 | 1 << ((byte)uVar17 & 0x1f);
+							fVar48 = flDistMax * flDistMax;
+							local_408._5_1_ = '\0';
+							local_3e8 = fVar48;
+							do {
+								uVar31 = 0;
+								lVar26 = (longlong)(int)uVar36;
+								if (9 < local_190) break;
+								local_350 = *puVar3;
+								uVar25 = *puVar3 >> 0x20;
+								local_400 = uVar25;
+								if ((0 < (int)uVar36) && (uVar36 = uVar36 - 1, uVar36 != 0)) {
+									*puVar3 = *(ulonglong*)((longlong)afStack_410 + lVar26 * 8 + lVar4);
+								}
+								local_3e4 = 0;
+								local_3f0 = (longlong)((int)uVar36 / 2);
+								uVar41 = uVar31;
+								if (0 < (longlong)((int)uVar36 / 2)) {
+									do {
+										iVar20 = (int)uVar31 * 2;
+										uVar17 = iVar20 + 1;
+										uVar25 = uVar41 * 2 + 1;
+										uVar40 = uVar41;
+										if (((int)uVar17 < (int)uVar36) &&
+											(*(float*)(puVar3 + uVar25) < *(float*)(puVar3 + uVar41))) {
+											uVar31 = (ulonglong)uVar17;
+											uVar40 = uVar25;
+										}
+										uVar17 = iVar20 + 2;
+										uVar25 = uVar41 * 2 + 2;
+										if (((int)uVar17 < (int)uVar36) &&
+											(*(float*)(puVar3 + uVar25) < *(float*)(puVar3 + uVar40))) {
+											uVar31 = (ulonglong)uVar17;
+											uVar40 = uVar25;
+										}
+										if ((int)uVar31 == local_3e4) break;
+										uVar25 = puVar3[uVar41];
+										puVar3[uVar41] = puVar3[uVar40];
+										local_3e4 = (int)uVar31;
+										puVar3[uVar40] = uVar25;
+										uVar41 = uVar40;
+									} while ((longlong)uVar40 < (longlong)local_3f0);
+									uVar40 = (ulonglong)(uint)local_408;
+									uVar25 = local_400;
+								}
+								this_01 = local_3e0;
+								uVar31 = 0;
+								iVar20 = (int)uVar25;
+								if ((iVar20 < 0) || (*(int*)(local_348 + 8) <= iVar20)) {
+									DAT_180d5b790 = DAT_180d5b790 + 1;
+								}
+								else {
+									uVar31 = *(ulonglong*)(*(longlong*)(local_348 + 0x10) + (longlong)iVar20 * 8);
+								}
+								iVar20 = *(int*)&(local_3e0->CBaseCombatCharacter_data).field_0x8;
+								local_3f0 = uVar31;
+								*(undefined8*)(auStack_438 + lVar4 + -8) = 0x180135f71;
+								FUN_180326190(uVar31, &local_3d8, iVar20);
+								fVar45 = local_3d8 - fVar45;
+								fVar46 = local_3d4 - fVar46;
+								fVar47 = local_3d0 - fVar47;
+								fVar15 = (float)local_350;
+								fVar44 = fVar46 * fVar46 + fVar45 * fVar45 + fVar47 * fVar47;
+								if ((((flTravelMinDist * flTravelMinDist <= (float)local_350) &&
+									((float)local_350 <= flTravelMaxDist * flTravelMaxDist)) &&
+									(flDistMin * flDistMin <= fVar44)) && (fVar44 <= fVar48)) {
+									if (local_408._4_1_ != '\0') {
+										lVar26 = *(longlong*)(uVar31 + 0x78);
+										pvVar5 = this_01->vftablePtr->vfunction602;
+										*(undefined8*)(auStack_438 + lVar4 + -8) = 0x180135ffd;
+										uVar18 = (*pvVar5)(this_01, lVar26);
+										pvVar6 = this_01->vftablePtr->vfunction535;
+										*(undefined8*)(auStack_438 + lVar4 + -8) = 0x180136017;
+										pfVar23 = (float*)(*pvVar6)(this_01, &local_318, uVar18);
+										lVar26 = *(longlong*)(uVar31 + 0x78);
+										bVar13 = true;
+										local_368 = local_3d8 + *pfVar23;
+										local_364 = local_3d4 + pfVar23[1];
+										local_360 = local_3d0 + pfVar23[2];
+										pvVar7 = this_01->vftablePtr->vfunction569;
+										*(undefined8*)(auStack_438 + lVar4 + -8) = 0x180136062;
+										cVar16 = (*pvVar7)(this_01, &local_3d8, lVar26);
+										if (cVar16 != '\0') {
+											pvVar8 = this_01->vftablePtr->vfunction572;
+											*(undefined8*)(auStack_438 + lVar4 + -8) = 0x180136084;
+											cVar16 = (*pvVar8)(this_01, &local_328, &local_368);
+											if (cVar16 != '\0') {
+												pvVar9 = this_01->vftablePtr->vfunction663;
+												*(undefined8*)(auStack_438 + lVar4 + -8) = 0x18013609c;
+												uVar27 = (*pvVar9)(this_01, (undefined8*)&local_3d8);
+												if ((char)uVar27 != '\0') {
+													plVar21 = *(longlong**)(uVar31 + 0x78);
+													*(float*)(uVar31 + 0x70) = *(float*)(gpGlobals + 0x10) + 1.0;
+													if ((plVar21 != (longlong*)0x0) &&
+														((ushort)(*(short*)((longlong)plVar21 + 0x54c) - 100U) < 2)) {
+														uVar17 = *(uint*)&this_01->field_0x1024;
+														if (uVar17 != 0xffffffff) {
+															uVar19 = uVar17 & 0xffff;
+															if ((*(uint*)(g_pEntList + (ulonglong)uVar19 * 0x30 + 0x10) ==
+																uVar17 >> 0x10) &&
+																(*(longlong*)(g_pEntList + (ulonglong)uVar19 * 0x30 + 8) != 0)) {
+																lVar26 = *(longlong*)(g_pEntList + (ulonglong)uVar19 * 0x30 + 8);
+																pvVar10 = this_01->vftablePtr->vfunction59;
+																*(undefined8*)(auStack_438 + lVar4 + -8) = 0x180136138;
+																(*pvVar10)(this_01);
+																*(undefined8*)(auStack_438 + lVar4 + -8) = 0x180136143;
+																FUN_180302770(lVar26, extraout_XMM0_Da);
+																*(undefined8*)(auStack_438 + lVar4 + -8) = 0x18013614d;
+																FUN_1802d2d80((longlong)this_01, (longlong*)0x0);
+																plVar21 = *(longlong**)(uVar31 + 0x78);
+															}
+														}
+														*(undefined8*)(auStack_438 + lVar4 + -8) = 0x180136159;
+														FUN_1802d2d80((longlong)this_01, plVar21);
+													}
+													lVar26 = (longlong)local_190;
+													bVar13 = false;
+													DAT_180d63814 = (int)local_400;
+													local_408._5_1_ = '\x01';
+													local_190 = local_190 + 1;
+													local_188 = local_1e0;
+													local_1e0[lVar26] = uVar31;
+													lVar26 = (longlong)local_2cc;
+													local_2cc = local_2cc + 1;
+													local_2c8 = local_2d8;
+													local_2d8[lVar26] = '\x01';
+													lVar26 = (longlong)local_1f0;
+													local_1f0 = local_1f0 + 1;
+													local_1e8 = local_218;
+													local_218[lVar26] = 0.0;
+													lVar26 = (longlong)local_228;
+													local_228 = local_228 + 1;
+													local_220 = local_250;
+													local_250[lVar26] = fVar15;
+													lVar26 = (longlong)local_298;
+													local_298 = local_298 + 1;
+													local_290 = &local_2c0;
+													(&local_2c0)[lVar26] = fVar44;
+													lVar26 = (longlong)local_260;
+													local_260 = local_260 + 1;
+													local_258 = local_288;
+													local_288[lVar26] = 0xffffffff;
+													lVar26 = (longlong)local_100;
+													fVar14 = (this_01->field1318_0x1380).m_vecTossVelocity.y;
+													local_100 = local_100 + 1;
+													local_f8 = local_178;
+													(local_178 + lVar26 * 3)[0] = (this_01->field1318_0x1380).m_vecTossVelocity.x;
+													(local_178 + lVar26 * 3)[1] = fVar14;
+													local_178[lVar26 * 3 + 2] = (this_01->field1318_0x1380).m_vecTossVelocity.z;
+												}
+											}
+										}
+										if ((5 < local_190) || (!bVar13)) goto LAB_1801365a2;
+									}
+									local_378.x = fVar45;
+									local_378.y = fVar46;
+									local_378.z = fVar47;
+									*(undefined8*)(auStack_438 + lVar4 + -8) = 0x1801362d7;
+									VectorNormalize(&local_378);
+									fVar14 = local_378.y;
+									fVar45 = local_378.x;
+									fVar46 = local_388.y;
+									fVar47 = local_388.x;
+									fVar42 = local_388.y * local_378.y;
+									fVar48 = local_388.x * local_378.x;
+									fVar43 = local_388.z * local_378.z;
+									*(undefined8*)(auStack_438 + lVar4 + -8) = 0x18013632a;
+									fVar42 = FUN_1807d9630(fVar48 + fVar42 + fVar43);
+									this_00 = local_3e0;
+									fVar42 = fVar42 * 57.29578;
+									fVar48 = local_3e8;
+									if ((local_3c8 <= fVar42) && (fVar42 <= flAngMax)) {
+										iVar20 = 0;
+										if (0.0 < fVar47 * fVar14 - fVar45 * fVar46) {
+											iVar20 = 4;
+										}
+										uVar17 = (iVar20 - (int)(((SQRT(fVar44) - flDistMin) * -4.0) /
+											((flDistMax + 0.001) - flDistMin))) * 4 -
+											(int)(((fVar42 - local_3c8) * -4.0) / ((flAngMax + 0.001) - local_3c8));
+										uVar19 = 1 << ((byte)uVar17 & 0x1f);
+										uVar31 = local_3f0;
+										this_01 = this_00;
+										if ((*(uint*)(local_390 + ((longlong)(int)uVar17 >> 5) * 4) & uVar19) == 0) {
+											pvVar9 = local_3e0->vftablePtr->vfunction663;
+											*(undefined8*)(auStack_438 + lVar4 + -8) = 0x180136424;
+											uVar27 = (*pvVar9)(this_00, (undefined8*)&local_3d8);
+											uVar31 = local_3f0;
+											fVar48 = local_3e8;
+											if ((char)uVar27 != '\0') {
+												lVar26 = (longlong)local_190;
+												DAT_180d63814 = (int)local_400;
+												local_190 = local_190 + 1;
+												local_188 = local_1e0;
+												local_1e0[lVar26] = local_3f0;
+												lVar26 = (longlong)local_2cc;
+												local_2cc = local_2cc + 1;
+												local_2c8 = local_2d8;
+												local_2d8[lVar26] = '\0';
+												lVar26 = (longlong)local_1f0;
+												local_1f0 = local_1f0 + 1;
+												local_1e8 = local_218;
+												local_218[lVar26] = fVar42;
+												lVar26 = (longlong)local_228;
+												local_228 = local_228 + 1;
+												local_220 = local_250;
+												local_250[lVar26] = fVar15;
+												lVar26 = (longlong)local_298;
+												local_298 = local_298 + 1;
+												local_290 = &local_2c0;
+												(&local_2c0)[lVar26] = fVar44;
+												lVar26 = (longlong)local_260;
+												local_260 = local_260 + 1;
+												local_258 = local_288;
+												local_288[lVar26] = uVar17;
+												lVar26 = (longlong)local_100;
+												fVar47 = (this_00->field1318_0x1380).m_vecTossVelocity.y;
+												local_100 = local_100 + 1;
+												local_f8 = local_178;
+												(local_178 + lVar26 * 3)[0] = (this_00->field1318_0x1380).m_vecTossVelocity.x;
+												(local_178 + lVar26 * 3)[1] = fVar47;
+												local_178[lVar26 * 3 + 2] = (this_00->field1318_0x1380).m_vecTossVelocity.z;
+												puVar1 = (uint*)(local_390 + ((longlong)(int)uVar17 >> 5) * 4);
+												*puVar1 = *puVar1 | uVar19;
+											}
+										}
+									}
+								}
+							LAB_1801365a2:
+								local_3f8 = *(int*)(uVar31 + 0x60);
+								local_3e4 = 0;
+								if (0 < *(int*)(uVar31 + 0x60)) {
+									do {
+										iVar20 = local_3e4;
+										psVar11 = *(short**)
+											(*(longlong*)(uVar31 + 0x50) +
+												(longlong)((DAT_180d63814 + local_3e4) % local_3f8) * 8);
+										sVar30 = *psVar11;
+										if ((int)local_400 == (int)sVar30) {
+											sVar30 = psVar11[1];
+										}
+										lVar26 = (longlong)sVar30 >> 5;
+										uVar32 = 1 << ((byte)sVar30 & 0x1f);
+										uVar17 = *(uint*)(local_330 + lVar26 * 4);
+										uVar19 = uVar36;
+										if ((uVar17 & uVar32) == 0) {
+											*(uint*)(local_330 + lVar26 * 4) = uVar32 | uVar17;
+											iVar33 = (int)sVar30;
+											if ((sVar30 < 0) || (*(int*)(local_348 + 8) <= iVar33)) {
+												DAT_180d5b790 = DAT_180d5b790 + 1;
+												lVar26 = 0;
+											}
+											else {
+												lVar26 = *(longlong*)(*(longlong*)(local_348 + 0x10) + (longlong)sVar30 * 8);
+											}
+											if (*(float*)(lVar26 + 0x70) <= *(float*)(gpGlobals + 0x10)) {
+												iVar34 = *(int*)&(this_01->CBaseCombatCharacter_data).field_0x8;
+												*(undefined8*)(auStack_438 + lVar4 + -8) = 0x18013665f;
+												pfVar23 = FUN_180326190(lVar26, local_30c, iVar34);
+												fVar47 = (pfVar23[1] - local_3a8.y) * (pfVar23[1] - local_3a8.y) +
+													(*pfVar23 - local_3a8.x) * (*pfVar23 - local_3a8.x) +
+													(pfVar23[2] - local_3a8.z) * (pfVar23[2] - local_3a8.z);
+												if (fVar47 <= flTravelMaxDist * flTravelMaxDist) {
+													uVar25 = (ulonglong)(int)uVar36;
+													uVar19 = uVar36 + 1;
+													local_340 = fVar47;
+													iStack_33c = iVar33;
+													puVar3[uVar25] = CONCAT44(iVar33, fVar47);
+													uVar31 = local_3f0;
+													if ((int)uVar36 < (int)uVar19) {
+														while (local_3f0 = uVar31, uVar36 != 0) {
+															iVar33 = (int)uVar25;
+															iVar20 = iVar33 + 1;
+															if (iVar20 < 0) {
+																iVar20 = iVar33 + 2;
+															}
+															uVar36 = (iVar20 >> 1) - 1;
+															uVar25 = (ulonglong)uVar36;
+															lVar26 = (longlong)(iVar20 >> 1);
+															iVar20 = local_3e4;
+															if (*(float*)((longlong)afStack_410 + lVar26 * 8 + lVar4) <
+																*(float*)(puVar3 + iVar33)) break;
+															uVar31 = puVar3[lVar26 + -1];
+															puVar3[lVar26 + -1] = puVar3[iVar33];
+															puVar3[iVar33] = uVar31;
+															uVar31 = local_3f0;
+															iVar20 = local_3e4;
+														}
+													}
+												}
+											}
+										}
+										uVar36 = uVar19;
+										local_3e4 = iVar20 + 1;
+										this_01 = local_3e0;
+									} while (iVar20 + 1 < local_3f8);
+									local_408._0_4_ = (uint)uVar40;
+								}
+								fVar45 = local_358;
+								fVar46 = local_3c4;
+								fVar47 = local_3c0;
+							} while (uVar36 != 0);
+							lVar26 = local_390;
+							if (local_190 != 0) {
+								lVar39 = (longlong)local_190;
+								if ((local_408._4_1_ == '\0') || (local_408._5_1_ == '\0')) {
+									uVar31 = 0;
+									iVar20 = 0;
+									iVar33 = (int)((((flAngPreference + 1.0) - 0.001) + flAngPreference + 1.0) - 0.001);
+									local_288[0] = local_288[0] & 0x8000000f;
+									if ((int)local_288[0] < 0) {
+										local_288[0] = (local_288[0] - 1 | 0xfffffff0) + 1;
+									}
+									local_288[0] = local_288[0] & 0x80000003;
+									if ((int)local_288[0] < 0) {
+										local_288[0] = (local_288[0] - 1 | 0xfffffffc) + 1;
+									}
+									if (1 < lVar39) {
+										lVar28 = 0;
+										lVar38 = 1;
+										if (4 < lVar39) {
+											lVar37 = 3;
+											local_350 = lVar39 - 3U;
+											uVar17 = 3;
+											lVar29 = 0;
+											do {
+												lVar2 = lVar38 * 4;
+												uVar36 = local_288[lVar38] & 0x8000000f;
+												if ((int)uVar36 < 0) {
+													uVar36 = (uVar36 - 1 | 0xfffffff0) + 1;
+												}
+												uVar36 = uVar36 & 0x80000003;
+												if ((int)uVar36 < 0) {
+													uVar36 = (uVar36 - 1 | 0xfffffffc) + 1;
+												}
+												uVar19 = (int)(local_288[0] - iVar33) >> 0x1f;
+												iVar34 = (local_288[0] - iVar33 ^ uVar19) - uVar19;
+												uVar19 = (int)(uVar36 - iVar33) >> 0x1f;
+												iVar20 = (uVar36 - iVar33 ^ uVar19) - uVar19;
+												if ((iVar20 < iVar34) ||
+													((iVar20 == iVar34 &&
+														((int)((&local_2c0)[lVar38] - *(float*)((longlong)&local_2c0 + lVar29)) < 1
+															== flDistPreference <= 0.0)))) {
+													uVar31 = local_3b8;
+													lVar28 = lVar38;
+													lVar29 = lVar2;
+													local_288[0] = uVar36;
+												}
+												uVar36 = local_288[lVar38 + 1] & 0x8000000f;
+												if ((int)uVar36 < 0) {
+													uVar36 = (uVar36 - 1 | 0xfffffff0) + 1;
+												}
+												uVar36 = uVar36 & 0x80000003;
+												if ((int)uVar36 < 0) {
+													uVar36 = (uVar36 - 1 | 0xfffffffc) + 1;
+												}
+												uVar19 = (int)(local_288[0] - iVar33) >> 0x1f;
+												iVar34 = (local_288[0] - iVar33 ^ uVar19) - uVar19;
+												uVar19 = (int)(uVar36 - iVar33) >> 0x1f;
+												iVar20 = (uVar36 - iVar33 ^ uVar19) - uVar19;
+												if ((iVar20 < iVar34) ||
+													((iVar20 == iVar34 &&
+														((int)(local_2bc[lVar38] - *(float*)((longlong)&local_2c0 + lVar29)) < 1 ==
+															flDistPreference <= 0.0)))) {
+													lVar29 = lVar2 + 4;
+													lVar28 = lVar37 + -1;
+													uVar31 = (ulonglong)(uVar17 - 1);
+													local_288[0] = uVar36;
+												}
+												uVar36 = local_288[lVar38 + 2] & 0x8000000f;
+												if ((int)uVar36 < 0) {
+													uVar36 = (uVar36 - 1 | 0xfffffff0) + 1;
+												}
+												uVar36 = uVar36 & 0x80000003;
+												if ((int)uVar36 < 0) {
+													uVar36 = (uVar36 - 1 | 0xfffffffc) + 1;
+												}
+												uVar19 = (int)(local_288[0] - iVar33) >> 0x1f;
+												iVar34 = (local_288[0] - iVar33 ^ uVar19) - uVar19;
+												uVar19 = (int)(uVar36 - iVar33) >> 0x1f;
+												iVar20 = (uVar36 - iVar33 ^ uVar19) - uVar19;
+												if ((iVar20 < iVar34) ||
+													((iVar20 == iVar34 &&
+														((int)(local_2bc[lVar38 + 1] - *(float*)((longlong)&local_2c0 + lVar29)) <
+															1 == flDistPreference <= 0.0)))) {
+													lVar29 = lVar2 + 8;
+													uVar31 = (ulonglong)uVar17;
+													lVar28 = lVar37;
+													local_288[0] = uVar36;
+												}
+												uVar36 = local_288[lVar38 + 3] & 0x8000000f;
+												if ((int)uVar36 < 0) {
+													uVar36 = (uVar36 - 1 | 0xfffffff0) + 1;
+												}
+												uVar36 = uVar36 & 0x80000003;
+												if ((int)uVar36 < 0) {
+													uVar36 = (uVar36 - 1 | 0xfffffffc) + 1;
+												}
+												uVar19 = (int)(local_288[0] - iVar33) >> 0x1f;
+												iVar34 = (local_288[0] - iVar33 ^ uVar19) - uVar19;
+												uVar19 = (int)(uVar36 - iVar33) >> 0x1f;
+												iVar20 = (uVar36 - iVar33 ^ uVar19) - uVar19;
+												if ((iVar20 < iVar34) ||
+													((iVar20 == iVar34 &&
+														((int)(local_2bc[lVar38 + 2] - *(float*)((longlong)&local_2c0 + lVar29)) <
+															1 == flDistPreference <= 0.0)))) {
+													lVar29 = lVar2 + 0xc;
+													lVar28 = lVar37 + 1;
+													uVar31 = (ulonglong)(uVar17 + 1);
+													local_288[0] = uVar36;
+												}
+												iVar20 = (int)uVar31;
+												local_3b8 = CONCAT44(local_3b8._4_4_, (int)local_3b8 + 4);
+												uVar17 = uVar17 + 4;
+												lVar38 = lVar38 + 4;
+												lVar37 = lVar37 + 4;
+											} while (lVar38 < (longlong)(lVar39 - 3U));
+											if (local_190 <= lVar38) goto LAB_180136c78;
+										}
+										lVar28 = lVar28 * 4;
+										lVar39 = lVar38 * 4;
+										lVar38 = local_190 - lVar38;
+										uVar25 = local_3b8;
+										do {
+											uVar17 = *(uint*)((longlong)local_288 + lVar39) & 0x8000000f;
+											if ((int)uVar17 < 0) {
+												uVar17 = (uVar17 - 1 | 0xfffffff0) + 1;
+											}
+											uVar17 = uVar17 & 0x80000003;
+											if ((int)uVar17 < 0) {
+												uVar17 = (uVar17 - 1 | 0xfffffffc) + 1;
+											}
+											uVar36 = (int)(local_288[0] - iVar33) >> 0x1f;
+											iVar34 = (local_288[0] - iVar33 ^ uVar36) - uVar36;
+											uVar36 = (int)(uVar17 - iVar33) >> 0x1f;
+											iVar20 = (uVar17 - iVar33 ^ uVar36) - uVar36;
+											if ((iVar20 < iVar34) ||
+												((iVar20 == iVar34 &&
+													((int)(*(float*)((longlong)&local_2c0 + lVar39) -
+														*(float*)((longlong)&local_2c0 + lVar28)) < 1 ==
+														flDistPreference <= 0.0)))) {
+												uVar31 = uVar25 & 0xffffffff;
+												lVar28 = lVar39;
+												local_288[0] = uVar17;
+											}
+											iVar20 = (int)uVar31;
+											uVar25 = (ulonglong)((int)uVar25 + 1);
+											lVar39 = lVar39 + 4;
+											lVar38 = lVar38 + -1;
+										} while (lVar38 != 0);
+									}
+								}
+								else {
+									iVar33 = 0;
+									iVar20 = 0;
+									if (0 < lVar39) {
+										lVar28 = 0;
+										do {
+											iVar20 = iVar33;
+											if (local_2d8[lVar28] != '\0') break;
+											iVar33 = iVar33 + 1;
+											lVar28 = lVar28 + 1;
+											iVar20 = 0;
+										} while (lVar28 < lVar39);
+									}
+									iVar34 = iVar33 + 1;
+									lVar28 = (longlong)iVar34;
+									if (lVar28 < lVar39) {
+										lVar38 = (longlong)iVar20;
+										if (3 < lVar39 - lVar28) {
+											lVar29 = lVar38 * 4;
+											iVar33 = iVar33 + 3;
+											do {
+												if ((local_2d8[lVar28] != '\0') &&
+													(*(float*)((longlong)&local_2c0 + lVar29) < (&local_2c0)[lVar28])) {
+													lVar29 = lVar28 * 4;
+													lVar38 = lVar28;
+													iVar20 = iVar34;
+												}
+												if ((local_2d8[lVar28 + 1] != '\0') &&
+													(*(float*)((longlong)&local_2c0 + lVar29) < local_2bc[lVar28])) {
+													lVar29 = (longlong)local_2bc + (lVar28 * 4 - (longlong)&local_2c0);
+													iVar20 = iVar33 + -1;
+													lVar38 = lVar28 + 1;
+												}
+												if ((local_2d8[lVar28 + 2] != '\0') &&
+													(*(float*)((longlong)&local_2c0 + lVar29) < local_2bc[lVar28 + 1])) {
+													lVar38 = lVar28 + 2;
+													lVar29 = lVar28 * 4 + 8;
+													iVar20 = iVar33;
+												}
+												if ((local_2d8[lVar28 + 3] != '\0') &&
+													(*(float*)((longlong)&local_2c0 + lVar29) < local_2bc[lVar28 + 2])) {
+													iVar20 = iVar33 + 1;
+													lVar38 = lVar28 + 3;
+													lVar29 = lVar28 * 4 + 0xc;
+												}
+												iVar34 = iVar34 + 4;
+												iVar33 = iVar33 + 4;
+												lVar28 = lVar28 + 4;
+											} while (lVar28 < lVar39 + -3);
+											if (lVar39 <= lVar28) goto LAB_180136c78;
+										}
+										lVar38 = lVar38 * 4;
+										do {
+											if ((local_2d8[lVar28] != '\0') &&
+												(*(float*)((longlong)&local_2c0 + lVar38) < (&local_2c0)[lVar28])) {
+												lVar38 = lVar28 * 4;
+												iVar20 = iVar34;
+											}
+											iVar34 = iVar34 + 1;
+											lVar28 = lVar28 + 1;
+										} while (lVar28 < lVar39);
+									}
+								}
+							LAB_180136c78:
+								lVar39 = (longlong)iVar20;
+								(local_3e0->field1318_0x1380).m_vecTossVelocity.x = local_178[lVar39 * 3];
+								(local_3e0->field1318_0x1380).m_vecTossVelocity.y = local_178[lVar39 * 3 + 1];
+								(local_3e0->field1318_0x1380).m_vecTossVelocity.z = local_178[lVar39 * 3 + 2];
+							}
+							if (1 < local_398._2_2_) {
+								plVar21 = *(longlong**)g_pMemAlloc_exref;
+								pcVar12 = *(code**)(*plVar21 + 0x28);
+								*(undefined8*)(auStack_438 + lVar4 + -8) = 0x180136cc7;
+								(*pcVar12)(plVar21, lVar26);
+							}
+							local_f8 = local_178;
+							local_258 = local_288;
+							local_290 = &local_2c0;
+							local_220 = local_250;
+							local_1e8 = local_218;
+							local_2c8 = local_2d8;
+							local_188 = local_1e0;
+							local_390 = 0;
+							local_100 = 0;
+							local_260 = 0;
+							local_298 = 0;
+							local_228 = 0;
+							local_1f0 = 0;
+							local_2cc = 0;
+							local_190 = 0;
+							puVar35 = auStack_438 + lVar4;
+							if (1 < local_336) {
+								plVar21 = *(longlong**)g_pMemAlloc_exref;
+								pcVar12 = *(code**)(*plVar21 + 0x28);
+								*(undefined8*)(auStack_438 + lVar4 + -8) = 0x180136d7a;
+								(*pcVar12)(plVar21, local_330);
+								puVar35 = auStack_438 + lVar4;
+							}
+							goto LAB_180135bd1;
+						}
+						//uStack_440 = 0x180135b84;
+						Vector puVar24 = (undefined8*)FUN_180076fe0((longlong)this);
+						local_360 = *(float*)(puVar24 + 1);
+						local_418 = (double)local_360;
+						//uStack_440 = 0x180135bcf;
+						DevWarning(2, "ComputeTeleportToss() - has no nearest node (check near %f %f %f)\n", puVar24.x, puVar24.y, puVar24.z);
+							//(double)(float)*puVar24, (double)(float)((ulonglong)*puVar24 >> 0x20));
+					}
+				}
+			}
+		}
+		//puVar35 = auStack_438;
+	LAB_180135bd1:
+		//uVar31 = local_e8 ^ (ulonglong)&local_408;
+		//*(undefined8*)(puVar35 + -8) = 0x180135be0;
+		//__security_check_cookie(uVar31);
+		return (bool)extraout_AL;
+
+		*/
 }
 
 
