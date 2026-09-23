@@ -40,6 +40,8 @@ If you use Source Filmmaker and already have it installed, skip to step 2.
 * Decompile CFunc_Pipe_Entrance::FUN_1800a7080
 * Check CFunc_Pipe_Entrance::UpdateOnRemove is correct
 * Make teleport grenades work better (They can currently teleport the player and npcs into walls)
+* Check the Portal 2 Feb 2010 paint code - might have more ice gun leftovers
+* Decompile newer CNPC_Surface from p2ce
 
 
 ## Credits
