@@ -7,7 +7,7 @@
 #include "cbase.h"
 #include "env_headcrabcanister_shared.h"
 #include "mapdata_shared.h"
-#include "sharedInterface.h"
+#include "sharedinterface.h"
 #include "mathlib/vmatrix.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

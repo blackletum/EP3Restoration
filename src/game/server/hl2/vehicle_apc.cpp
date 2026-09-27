@@ -7,8 +7,8 @@
 #include "cbase.h"
 #include "vehicle_apc.h"
 #include "ammodef.h"
-#include "IEffects.h"
-#include "engine/IEngineSound.h"
+#include "ieffects.h"
+#include "engine/ienginesound.h"
 #include "weapon_rpg.h"
 #include "in_buttons.h"
 #include "globalstate.h"
@@ -16,7 +16,7 @@
 #include "ai_basenpc.h"
 #include "ndebugoverlay.h"
 #include "gib.h"
-#include "EntityFlame.h"
+#include "entityflame.h"
 #include "smoke_trail.h"
 #include "explode.h"
 #include "effect_dispatch_data.h"
@@ -132,6 +132,10 @@ void CPropAPC::Precache( void )
 	PrecacheScriptSound( "Weapon_AR2.Single" );
 	PrecacheScriptSound( "PropAPC.FireRocket" );
 	PrecacheScriptSound( "combine.door_lock" );
+
+	PrecacheEffect( "HelicopterTracer" );
+	PrecacheEffect( "HelicopterImpact" );
+	PrecacheEffect( "ChopperMuzzleFlash" );
 }
 
 
@@ -393,11 +397,7 @@ void CPropAPC::ExplodeAndThrowChunk( const Vector &vecExplosionPos )
 		pPhysicsObject->SetVelocity(&vecVelocity, &angImpulse );
 	}
 
-	CEntityFlame *pFlame = CEntityFlame::Create( pChunk, false );
-	if ( pFlame != NULL )
-	{
-		pFlame->SetLifetime( pChunk->m_lifeTime );
-	}
+	CEntityFlame::Create( pChunk, pChunk->m_lifeTime );
 }
 
 
@@ -481,11 +481,7 @@ void CPropAPC::Event_Killed( const CTakeDamageInfo &info )
 			pPhysicsObject->SetVelocity(&vecVelocity, &angImpulse );
 		}
 
-		CEntityFlame *pFlame = CEntityFlame::Create( pChunk, false );
-		if ( pFlame != NULL )
-		{
-			pFlame->SetLifetime( pChunk->m_lifeTime );
-		}
+		CEntityFlame::Create( pChunk, pChunk->m_lifeTime );
 	}
 
 	UTIL_ScreenShake( vecAbsPoint, 25.0, 150.0, 1.0, 750.0f, SHAKE_START );

@@ -13,7 +13,7 @@
 #include "grenade_pathfollower.h"
 #include "explode.h"
 #include "ndebugoverlay.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

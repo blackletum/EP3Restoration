@@ -8,8 +8,8 @@
 #include "cbase.h"
 #include "basegrenade_shared.h"
 #include "grenade_frag.h"
-#include "Sprite.h"
-#include "SpriteTrail.h"
+#include "sprite.h"
+#include "spritetrail.h"
 #include "soundent.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -299,13 +299,6 @@ void CGrenadeFrag::OnPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunPickup_t r
 {
 	SetThrower( pPhysGunUser );
 
-#ifdef HL2MP
-	SetTimer( FRAG_GRENADE_GRACE_TIME_AFTER_PICKUP, FRAG_GRENADE_GRACE_TIME_AFTER_PICKUP / 2);
-
-	BlipSound();
-	m_flNextBlipTime = gpGlobals->curtime + FRAG_GRENADE_BLIP_FAST_FREQUENCY;
-	m_bHasWarnedAI = true;
-#else
 	if( IsX360() )
 	{
 		// Give 'em a couple of seconds to aim and throw. 
@@ -313,7 +306,6 @@ void CGrenadeFrag::OnPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunPickup_t r
 		BlipSound();
 		m_flNextBlipTime = gpGlobals->curtime + FRAG_GRENADE_BLIP_FAST_FREQUENCY;
 	}
-#endif
 
 #ifdef HL2_EPISODIC
 	SetPunted( true );

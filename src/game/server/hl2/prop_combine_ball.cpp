@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: combine ball -	can be held by the super physcannon and launched
 //							by the AR2's alt-fire
@@ -20,7 +20,7 @@
 #include "ai_basenpc.h"
 #include "npc_bullseye.h"
 #include "filters.h"
-#include "SpriteTrail.h"
+#include "spritetrail.h"
 #include "decals.h"
 #include "hl2_player.h"
 #include "eventqueue.h"
@@ -240,7 +240,7 @@ END_SEND_TABLE()
 //-----------------------------------------------------------------------------
 // Gets at the spawner
 //-----------------------------------------------------------------------------
-inline CFuncCombineBallSpawner *CPropCombineBall::GetSpawner()
+CFuncCombineBallSpawner *CPropCombineBall::GetSpawner()
 {
 	return m_hSpawner;
 }
@@ -275,6 +275,9 @@ void CPropCombineBall::Precache( void )
 	}
 
 	PrecacheScriptSound( "NPC_CombineBall.HoldingInPhysCannon" );
+
+	PrecacheEffect( "cball_explode" );
+	PrecacheEffect( "cball_bounce" );
 }
 
 
@@ -792,7 +795,7 @@ void CPropCombineBall::OnPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunPickup
 	{
 		m_pGlowTrail->TurnOff();
 		m_pGlowTrail->SetRenderColor( 0, 0, 0 );
-		m_pGlowTrail->SetRenderAlpha( 0 );
+		m_pGlowTrail->SetRenderAlpha(0);
 	}
 
 	if ( reason != PUNTED_BY_CANNON )
@@ -1164,14 +1167,6 @@ bool CPropCombineBall::DissolveEntity( CBaseEntity *pEntity )
 	if( pEntity->IsEFlagSet( EFL_NO_DISSOLVE ) )
 		return false;
 
-#ifdef HL2MP
-	if ( pEntity->IsPlayer() )
-	{
-		m_bStruckEntity = true;
-		return false;
-	}
-#endif
-
 	if( !pEntity->IsNPC() && !(dynamic_cast<CRagdollProp*>(pEntity)) )
 		return false;
 
@@ -1314,7 +1309,6 @@ void CPropCombineBall::DoImpactEffect( const Vector &preVelocity, int index, gam
 		// Send the effect over
 		CEffectData	data;
 
-		data.m_flRadius = 16;
 		data.m_vNormal	= tr.plane.normal;
 		data.m_vOrigin	= tr.endpos + tr.plane.normal * 1.0f;
 
@@ -1359,7 +1353,6 @@ bool CPropCombineBall::IsAttractiveTarget( CBaseEntity *pEntity )
 	else
 	{
 		
-#ifndef HL2MP
 		if ( GetOwnerEntity() ) 
 		{
 			// Things we check if this ball has an owner that's not an NPC.
@@ -1381,21 +1374,6 @@ bool CPropCombineBall::IsAttractiveTarget( CBaseEntity *pEntity )
 
 		if( pEntity->Classify() == CLASS_BULLSEYE )
 			return false;
-
-#else
-		if ( pEntity->IsPlayer() == false )
-			 return false;
-
-		if ( pEntity == GetOwnerEntity() )
-			 return false;
-		
-		//No tracking teammates in teammode!
-		if ( g_pGameRules->IsTeamplay() )
-		{
-			if ( g_pGameRules->PlayerRelationship( GetOwnerEntity(), pEntity ) == GR_TEAMMATE )
-				 return false;
-		}
-#endif
 
 		// We must be able to hit them
 		trace_t	tr;

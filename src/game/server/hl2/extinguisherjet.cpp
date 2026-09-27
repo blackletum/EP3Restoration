@@ -7,7 +7,7 @@
 
 #include "cbase.h"
 #include "extinguisherjet.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "fire.h"
 #include "ndebugoverlay.h"
 

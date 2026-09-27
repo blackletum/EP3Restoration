@@ -28,8 +28,8 @@
 #include "player.h"
 #include "mathlib/mathlib.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
-#include "IEffects.h"
+#include "engine/ienginesound.h"
+#include "ieffects.h"
 #include "effect_color_tables.h"
 #include "npc_rollermine.h"
 #include "eventqueue.h"
@@ -82,7 +82,7 @@ extern ConVar sk_dmg_sniper_penetrate_npc;
 #define	SNIPER_DEFAULT_PAINT_NPC_TIME_NOISE		0.75f
 #endif
 
-#define SNIPER_SUBSEQUENT_PAINT_TIME	( ( IsXbox() ) ? 1.0f : 0.4f )
+#define SNIPER_SUBSEQUENT_PAINT_TIME	0.4f
 
 #define SNIPER_FOG_PAINT_ENEMY_TIME	    0.25f
 #define SNIPER_PAINT_DECOY_TIME			2.0f
@@ -918,6 +918,7 @@ void CProtoSniper::Precache( void )
 	PrecacheScriptSound( "NPC_Sniper.Reload" );
 	PrecacheScriptSound( "NPC_Sniper.SonicBoom" );
 
+	PrecacheEffect( "CommandPointer" );
 	BaseClass::Precache();
 }
 
@@ -2026,9 +2027,6 @@ void CProtoSniper::StartTask( const Task_t *pTask )
 			if( GetEnemy()->IsPlayer() )
 			{
 				float delay = 0;
-#ifdef _XBOX
-				delay += sniper_xbox_delay.GetFloat();
-#endif
 
 				if( gpGlobals->curtime - m_flTimeLastAttackedPlayer <= SNIPER_FASTER_ATTACK_PERIOD )
 				{
@@ -3261,7 +3259,7 @@ void CSniperBullet::BulletThink( void )
 				//Msg("-");
 				vecCursor += m_vecDir * STEP_SIZE;
 
-				if( UTIL_PointContents( vecCursor, CONTENTS_SOLID) != CONTENTS_SOLID )
+				if( UTIL_PointContents( vecCursor, MASK_SOLID ) != CONTENTS_SOLID )
 				{
 					// Passed out of a solid! 
 					SetAbsOrigin( vecCursor );

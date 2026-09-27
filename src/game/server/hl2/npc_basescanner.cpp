@@ -10,7 +10,7 @@
 #include "weapon_physcannon.h"
 #include "hl2_player.h"
 #include "npc_scanner.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "explode.h"
 #include "ai_route.h"
 
@@ -85,12 +85,6 @@ CNPC_BaseScanner::CNPC_BaseScanner()
 //-----------------------------------------------------------------------------
 void CNPC_BaseScanner::Spawn(void)
 {
-#ifdef _XBOX
-	// Always fade the corpse
-	AddSpawnFlags( SF_NPC_FADE_CORPSE );
-	AddEffects( EF_NOSHADOW );
-#endif // _XBOX
-
 	SetHullType( HULL_TINY_CENTERED );
 	SetHullSizeNormal();
 
@@ -996,7 +990,7 @@ bool CNPC_BaseScanner::OverridePathMove( CBaseEntity *pMoveTarget, float flInter
 	Vector lastPatrolDir = GetNavigator()->GetCurWaypointPos() - GetAbsOrigin();
 
 	// Continue on our path
-	if ( ProgressFlyPath( flInterval, pMoveTarget, (MASK_NPCSOLID|CONTENTS_WATER), false, 64 ) == AINPP_COMPLETE )
+	if ( ProgressFlyPath( flInterval, pMoveTarget, (GetAITraceMask()|CONTENTS_WATER), false, 64 ) == AINPP_COMPLETE )
 	{
 		if ( IsCurSchedule( SCHED_SCANNER_PATROL ) )
 		{
@@ -1059,7 +1053,7 @@ bool CNPC_BaseScanner::OverrideMove( float flInterval )
 		if ( pMoveTarget )
 		{
 			trace_t tr;
-			AI_TraceHull( GetAbsOrigin(), vMoveTargetPos, GetHullMins(), GetHullMaxs(), MASK_NPCSOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr );
+			AI_TraceHull( GetAbsOrigin(), vMoveTargetPos, GetHullMins(), GetHullMaxs(), GetAITraceMask_BrushOnly(), this, COLLISION_GROUP_NONE, &tr );
 
 			float fTargetDist = (1.0f-tr.fraction)*(GetAbsOrigin() - vMoveTargetPos).Length();
 
@@ -1141,7 +1135,7 @@ Vector CNPC_BaseScanner::IdealGoalForMovement( const Vector &goalPos, const Vect
 
 	// Trace down and make sure we can fit here
 	trace_t	tr;
-	AI_TraceHull( vIdealPos, vIdealPos - Vector( 0, 0, MinGroundDist() ), GetHullMins(), GetHullMaxs(), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+	AI_TraceHull( vIdealPos, vIdealPos - Vector( 0, 0, MinGroundDist() ), GetHullMins(), GetHullMaxs(), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 
 	// Move up otherwise
 	if ( tr.fraction < 1.0f )

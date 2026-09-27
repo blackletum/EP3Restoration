@@ -6,14 +6,14 @@
 
 #include "cbase.h"
 #include "ammodef.h"
-#include "AI_Hint.h"
-#include "AI_Navigator.h"
-#include "npc_Assassin.h"
+#include "ai_hint.h"
+#include "ai_navigator.h"
+#include "npc_assassin.h"
 #include "game.h"
-#include "NPCEvent.h"
-#include "engine/IEngineSound.h"
-#include "AI_Squad.h"
-#include "AI_SquadSlot.h"
+#include "npcevent.h"
+#include "engine/ienginesound.h"
+#include "ai_squad.h"
+#include "ai_squadslot.h"
 #include "ai_moveprobe.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -281,7 +281,7 @@ int CNPC_Assassin::RangeAttack2Conditions ( float flDot, float flDist )
 
 	// Check for a clear path
 	trace_t	tr;
-	UTIL_TraceHull( GetAbsOrigin(), GetEnemy()->GetAbsOrigin(), GetHullMins(), GetHullMaxs(), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+	UTIL_TraceHull( GetAbsOrigin(), GetEnemy()->GetAbsOrigin(), GetHullMins(), GetHullMaxs(), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 	
 	if ( tr.fraction == 1.0f || tr.m_pEnt == GetEnemy() )
 		return COND_CAN_RANGE_ATTACK2;
@@ -574,7 +574,7 @@ bool CNPC_Assassin::CanFlip( int flipType, Activity &activity, const Vector *avo
 	}
 
 	/*
-	UTIL_TraceHull( GetAbsOrigin(), endPos, NAI_Hull::Mins(m_eHull) + Vector( 0, 0, StepHeight() ), NAI_Hull::Maxs(m_eHull), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+	UTIL_TraceHull( GetAbsOrigin(), endPos, NAI_Hull::Mins(m_eHull) + Vector( 0, 0, StepHeight() ), NAI_Hull::Maxs(m_eHull), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 
 	// See if we're hit an obstruction in that direction
 	if ( tr.fraction < 1.0f )
@@ -596,7 +596,7 @@ bool CNPC_Assassin::CanFlip( int flipType, Activity &activity, const Vector *avo
 		endPos = GetAbsOrigin() + ( testDir * (stepLength*i) );
 		
 		// Also check for a cliff edge
-		UTIL_TraceHull( endPos, endPos - Vector( 0, 0, StepHeight() * 4.0f ), NAI_Hull::Mins(m_eHull) + Vector( 0, 0, StepHeight() ), NAI_Hull::Maxs(m_eHull), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+		UTIL_TraceHull( endPos, endPos - Vector( 0, 0, StepHeight() * 4.0f ), NAI_Hull::Mins(m_eHull) + Vector( 0, 0, StepHeight() ), NAI_Hull::Maxs(m_eHull), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 
 		if ( tr.fraction == 1.0f )
 		{
@@ -616,7 +616,7 @@ bool CNPC_Assassin::CanFlip( int flipType, Activity &activity, const Vector *avo
 	*/
 	
 	AIMoveTrace_t moveTrace;
-	GetMoveProbe()->TestGroundMove( GetAbsOrigin(), endPos, MASK_NPCSOLID, AITGM_DEFAULT, &moveTrace );
+	GetMoveProbe()->TestGroundMove( GetAbsOrigin(), endPos, GetAITraceMask(), AITGM_DEFAULT, &moveTrace );
 
 	if ( moveTrace.fStatus != AIMR_OK )
 		return false;

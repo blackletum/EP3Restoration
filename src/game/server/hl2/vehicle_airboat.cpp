@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright (c) 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -6,10 +6,10 @@
 
 #include "cbase.h"
 #include "vehicle_base.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "in_buttons.h"
 #include "ammodef.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "beam_shared.h"
 #include "weapon_gauss.h"
 #include "soundenvelope.h"
@@ -364,6 +364,10 @@ void CPropAirboat::Precache( void )
 
 	PrecacheMaterial( "effects/splashwake1" );
 	PrecacheMaterial( "effects/splashwake4" );
+
+	PrecacheEffect( "AirboatGunImpact" );
+	PrecacheEffect( "AirboatMuzzleFlash" );
+	PrecacheEffect( "watersplash" );
 }
 
 

@@ -15,7 +15,7 @@
 #include "fire.h"
 #include "ar2_explosion.h"
 #include "ndebugoverlay.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -29,7 +29,7 @@ ConVar	fire_extinguisher_explode_strength( "fire_extinguisher_explode_strength",
 
 #define	EXTINGUISHER_AMMO_RATE	0.2
 
-extern short	g_sModelIndexFireball;	// (in combatweapon.cpp) holds the index for the smoke cloud
+extern int	g_sModelIndexFireball;	// (in combatweapon.cpp) holds the index for the smoke cloud
 
 class CWeaponExtinguisher: public CHLSelectFireMachineGun
 {

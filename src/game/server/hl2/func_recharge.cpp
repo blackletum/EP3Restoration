@@ -16,7 +16,7 @@
 #include "cbase.h"
 #include "gamerules.h"
 #include "player.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "in_buttons.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -656,10 +656,6 @@ void CNewRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 	{
 		nIncrementArmor = 10;
 		
-#ifdef HL2MP
-		nIncrementArmor = 2;
-#endif
-
 		// Also give health for the citadel version.
 		if ( pActivator->GetHealth() < pActivator->GetMaxHealth() && m_flNextCharge < gpGlobals->curtime )
 		{

@@ -10,17 +10,17 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "Sprite.h"
+#include "sprite.h"
 #include "basecombatweapon.h"
-#include "AI_BaseNPC.h"
-#include "AI_Senses.h"
-#include "AI_Memory.h"
+#include "ai_basenpc.h"
+#include "ai_senses.h"
+#include "ai_memory.h"
 #include "gamerules.h"
 #include "ammodef.h"
 #include "ndebugoverlay.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 
 class CSprite;
 
@@ -53,7 +53,7 @@ int ACT_TURRET_RELOAD;
 #define SF_NPC_TURRET_AUTOACTIVATE		0x00000020
 #define SF_NPC_TURRET_STARTINACTIVE		0x00000040
 
-extern short		g_sModelIndexSmoke;			// (in combatweapon.cpp) holds the index for the smoke cloud
+extern int		g_sModelIndexSmoke;			// (in combatweapon.cpp) holds the index for the smoke cloud
 
 ConVar	sk_miniturret_health( "sk_miniturret_health","0");
 ConVar	sk_sentry_health( "sk_sentry_health","0");

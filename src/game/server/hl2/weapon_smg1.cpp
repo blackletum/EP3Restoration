@@ -6,14 +6,14 @@
 
 #include "cbase.h"
 #include "basehlcombatweapon.h"
-#include "NPCevent.h"
+#include "npcevent.h"
 #include "basecombatcharacter.h"
-#include "AI_BaseNPC.h"
+#include "ai_basenpc.h"
 #include "player.h"
 #include "game.h"
 #include "in_buttons.h"
 #include "grenade_ar2.h"
-#include "AI_Memory.h"
+#include "ai_memory.h"
 #include "soundent.h"
 #include "rumble_shared.h"
 #include "gamestats.h"
@@ -57,7 +57,7 @@ public:
 	const WeaponProficiencyInfo_t *GetProficiencyValues();
 
 	void FireNPCPrimaryAttack( CBaseCombatCharacter *pOperator, Vector &vecShootOrigin, Vector &vecShootDir );
-	void Operator_ForceNPCFire( CBaseCombatCharacter  *pOperator, bool bSecondary, CBaseEntity* pTarget = NULL);
+	void Operator_ForceNPCFire( CBaseCombatCharacter  *pOperator, bool bSecondary, CBaseEntity *pTarget = NULL );
 	void Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
 
 	DECLARE_ACTTABLE();
@@ -190,7 +190,7 @@ void CWeaponSMG1::FireNPCPrimaryAttack( CBaseCombatCharacter *pOperator, Vector 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CWeaponSMG1::Operator_ForceNPCFire( CBaseCombatCharacter *pOperator, bool bSecondary, CBaseEntity* pTarget )
+void CWeaponSMG1::Operator_ForceNPCFire( CBaseCombatCharacter *pOperator, bool bSecondary, CBaseEntity *pTarget )
 {
 	// Ensure we have enough rounds in the clip
 	m_iClip1++;
@@ -199,13 +199,13 @@ void CWeaponSMG1::Operator_ForceNPCFire( CBaseCombatCharacter *pOperator, bool b
 	QAngle	angShootDir;
 	GetAttachment( LookupAttachment( "muzzle" ), vecShootOrigin, angShootDir );
 
-	if (pTarget) 
+	if ( pTarget )
 	{
-		vecShootDir = pTarget->GetAbsOrigin() - vecShootOrigin;
+		vecShootDir = pTarget->WorldSpaceCenter() - vecShootOrigin;
 	}
-	else 
+	else
 	{
-		AngleVectors(angShootDir, &vecShootDir);
+		AngleVectors( angShootDir, &vecShootDir );
 	}
 
 	FireNPCPrimaryAttack( pOperator, vecShootOrigin, vecShootDir );
@@ -358,7 +358,20 @@ void CWeaponSMG1::SecondaryAttack( void )
 	Vector vecSrc = pPlayer->Weapon_ShootPosition();
 	Vector	vecThrow;
 	// Don't autoaim on grenade tosses
-	AngleVectors( pPlayer->EyeAngles() + pPlayer->GetPunchAngle(), &vecThrow );
+	// TrackIR
+	if ( IsHeadTrackingEnabled() )
+	{
+		QAngle anglesTemp;
+		Vector vAim = pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+		VectorAngles(vAim, anglesTemp);
+		AngleVectors( anglesTemp + pPlayer->GetPunchAngle(), &vecThrow );
+		// TrackIR
+	}
+	else
+	{
+		AngleVectors( pPlayer->EyeAngles() + pPlayer->GetPunchAngle(), &vecThrow );
+	}
+	
 	VectorScale( vecThrow, 1000.0f, vecThrow );
 	
 	//Create the grenade

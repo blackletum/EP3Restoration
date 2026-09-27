@@ -94,7 +94,7 @@ void CGrenadeEnergy::Animate( void )
 
 	if (flLifeLeft < 0)
 	{
-		SetRenderColorA( 0 );
+		SetRenderAlpha( 0 );
 		SetThink(NULL);
 		UTIL_Remove(this);
 	}
@@ -109,7 +109,7 @@ void CGrenadeEnergy::Animate( void )
 
 	StudioFrameAdvance( );
 
-	SetRenderColorA( flLifeLeft );
+	SetRenderAlpha( flLifeLeft );
 }
 
 void CGrenadeEnergy::Event_Killed( const CTakeDamageInfo &info )

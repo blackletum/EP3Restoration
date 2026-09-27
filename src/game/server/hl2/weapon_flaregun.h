@@ -4,7 +4,7 @@
 //
 //=============================================================================//
 
-#include "basehlcombatweapon.h"
+#include "basecombatweapon.h" // terror
 #include "soundenvelope.h"
 
 #ifndef WEAPON_FLAREGUN_H
@@ -87,6 +87,8 @@ public:
 	void		AddToActiveFlares( void );
 };
 
+/**
+ * TERROR:
 //---------------------
 // Flaregun
 //---------------------
@@ -101,6 +103,7 @@ public:
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
 };
+*/
 
 #endif // WEAPON_FLAREGUN_H
 

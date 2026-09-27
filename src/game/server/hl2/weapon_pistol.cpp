@@ -6,10 +6,10 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "NPCEvent.h"
+#include "npcevent.h"
 #include "basehlcombatweapon.h"
 #include "basecombatcharacter.h"
-#include "AI_BaseNPC.h"
+#include "ai_basenpc.h"
 #include "player.h"
 #include "gamerules.h"
 #include "in_buttons.h"
@@ -51,6 +51,7 @@ public:
 	void	PrimaryAttack( void );
 	void	AddViewKick( void );
 	void	DryFire( void );
+	void	Operator_ForceNPCFire( CBaseCombatCharacter  *pOperator, bool bSecondary, CBaseEntity *pTarget = NULL );
 	void	Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
 
 	void	UpdatePenaltyTime( void );
@@ -172,6 +173,41 @@ CWeaponPistol::CWeaponPistol( void )
 void CWeaponPistol::Precache( void )
 {
 	BaseClass::Precache();
+}
+
+void CWeaponPistol::Operator_ForceNPCFire( CBaseCombatCharacter *pOperator, bool bSecondary, CBaseEntity *pTarget )
+{
+	if ( ( gpGlobals->curtime - m_flLastAttackTime ) > 0.5f )
+	{
+		m_nNumShotsFired = 0;
+	}
+	else
+	{
+		m_nNumShotsFired++;
+	}
+
+	m_flLastAttackTime = gpGlobals->curtime;
+	m_flSoonestPrimaryAttack = gpGlobals->curtime + PISTOL_FASTEST_REFIRE_TIME;
+	CSoundEnt::InsertSound( SOUND_COMBAT, GetAbsOrigin(), SOUNDENT_VOLUME_PISTOL, 0.2, GetOwner() );
+
+	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
+
+	if( pOwner )
+	{
+		// Each time the player fires the pistol, reset the view punch. This prevents
+		// the aim from 'drifting off' when the player fires very quickly. This may
+		// not be the ideal way to achieve this, but it's cheap and it works, which is
+		// great for a feature we're evaluating. (sjb)
+		pOwner->ViewPunchReset();
+	}
+
+	BaseForceFire( pOperator, pTarget );
+
+	// Add an accuracy penalty which can move past our maximum penalty time if we're really spastic
+	m_flAccuracyPenalty += PISTOL_ACCURACY_SHOT_PENALTY_TIME;
+
+	m_iPrimaryAttacks++;
+	gamestats->Event_WeaponFired( pOwner, true, GetClassname() );
 }
 
 //-----------------------------------------------------------------------------

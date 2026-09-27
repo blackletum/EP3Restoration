@@ -10,7 +10,7 @@
 #include "basecombatcharacter.h"
 #include "ai_basenpc.h"
 #include "decals.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "ai_squad.h"
 #include "ai_utils.h"
 #include "ai_senses.h"

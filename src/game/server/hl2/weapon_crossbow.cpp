@@ -5,18 +5,18 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "NPCEvent.h"
+#include "npcevent.h"
 #include "basehlcombatweapon_shared.h"
 #include "basecombatcharacter.h"
-#include "AI_BaseNPC.h"
+#include "ai_basenpc.h"
 #include "player.h"
 #include "gamerules.h"
 #include "in_buttons.h"
 #include "soundent.h"
 #include "game.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
-#include "IEffects.h"
+#include "engine/ienginesound.h"
+#include "ieffects.h"
 #include "te_effect_dispatch.h"
 #include "sprite.h"
 #include "spritetrail.h"
@@ -192,6 +192,8 @@ void CCrossbowBolt::Precache( void )
 	PrecacheModel( "models/crossbow_bolt.mdl" );
 
 	PrecacheModel( "sprites/light_glow02_noz.vmt" );
+
+	PrecacheEffect( "BoltImpact" );
 }
 
 //-----------------------------------------------------------------------------
@@ -370,7 +372,7 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 			}
 			
 			// Shoot some sparks
-			if ( UTIL_PointContents( GetAbsOrigin(), CONTENTS_WATER) != CONTENTS_WATER)
+			if ( UTIL_PointContents( GetAbsOrigin(), MASK_WATER ) != CONTENTS_WATER)
 			{
 				g_pEffects->Sparks( GetAbsOrigin() );
 			}
@@ -522,6 +524,8 @@ void CWeaponCrossbow::Precache( void )
 
 	PrecacheModel( CROSSBOW_GLOW_SPRITE );
 	PrecacheModel( CROSSBOW_GLOW_SPRITE2 );
+
+	PrecacheEffect( "CrossbowLoad" );
 
 	BaseClass::Precache();
 }
@@ -731,6 +735,21 @@ bool CWeaponCrossbow::Holster( CBaseCombatWeapon *pSwitchingTo )
 //-----------------------------------------------------------------------------
 void CWeaponCrossbow::ToggleZoom( void )
 {
+#ifdef HL2_EP3
+	extern ConVar dev_test_fire_teleport_projectile;
+	extern ConVar sk_teleport_projectile_rechargetime;
+	if ( dev_test_fire_teleport_projectile.GetBool() )
+	{
+		if ( m_flNextSecondaryAttack <= gpGlobals->curtime )
+		{
+			extern void FireTeleportProjectileFn();
+			m_flNextSecondaryAttack = gpGlobals->curtime + sk_teleport_projectile_rechargetime.GetFloat();
+			FireTeleportProjectileFn();
+		}
+		return;
+	}
+#endif
+
 	CBasePlayer *pPlayer = ToBasePlayer( GetOwner() );
 	
 	if ( pPlayer == NULL )

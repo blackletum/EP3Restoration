@@ -14,7 +14,7 @@
 #include "entitylist.h"
 #include "ndebugoverlay.h"
 #include "antlion_dust.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "globalstate.h"
 #include "movevars_shared.h"
 #include "te_effect_dispatch.h"
@@ -266,11 +266,6 @@ void CNPC_Antlion::Spawn( void )
 {
 	Precache();
 
-#ifdef _XBOX
-	// Always fade the corpse
-	AddSpawnFlags( SF_NPC_FADE_CORPSE );
-#endif // _XBOX
-
 #ifdef HL2_EPISODIC
 	if ( IsWorker() )
 	{
@@ -482,6 +477,13 @@ void CNPC_Antlion::Precache( void )
 	PrecacheScriptSound( "NPC_Antlion.ZappedFlip" );
 	PrecacheScriptSound( "NPC_Antlion.PoisonShoot" );
 	PrecacheScriptSound( "NPC_Antlion.PoisonBall" );
+#endif
+
+	PrecacheEffect( "watersplash" );
+	PrecacheEffect( "TeslaHitboxes" );
+
+#if HL2_EPISODIC
+	PrecacheEffect( "WaterSurfaceExplosion" );
 #endif
 
 	BaseClass::Precache();
@@ -745,7 +747,7 @@ bool CNPC_Antlion::GetGroundPosition( const Vector &testPos, Vector &result )
 {
 	// Trace up to clear the ground
 	trace_t	tr;
-	AI_TraceHull( testPos, testPos + Vector( 0, 0, 64 ), NAI_Hull::Mins( GetHullType() ), NAI_Hull::Maxs( GetHullType() ), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+	AI_TraceHull( testPos, testPos + Vector( 0, 0, 64 ), NAI_Hull::Mins( GetHullType() ), NAI_Hull::Maxs( GetHullType() ), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 
 	// If we're stuck in solid, this can't be valid
 	if ( tr.allsolid )
@@ -764,7 +766,7 @@ bool CNPC_Antlion::GetGroundPosition( const Vector &testPos, Vector &result )
 	}
 
 	// Trace down to find the ground
-	AI_TraceHull( tr.endpos, tr.endpos - Vector( 0, 0, 128 ), NAI_Hull::Mins( GetHullType() ), NAI_Hull::Maxs( GetHullType() ), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+	AI_TraceHull( tr.endpos, tr.endpos - Vector( 0, 0, 128 ), NAI_Hull::Mins( GetHullType() ), NAI_Hull::Maxs( GetHullType() ), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 
 	if ( g_debug_antlion.GetInt() == 3 )
 	{
@@ -1055,7 +1057,7 @@ void CNPC_Antlion::HandleAnimEvent( animevent_t *pEvent )
 {
 #ifdef HL2_EPISODIC
 		// Handle the spit event
-		if ( pEvent->Event() == AE_ANTLION_WORKER_SPIT)
+		if ( pEvent->Event() == AE_ANTLION_WORKER_SPIT )
 		{
 			if ( GetEnemy() )
 			{
@@ -1144,7 +1146,7 @@ void CNPC_Antlion::HandleAnimEvent( animevent_t *pEvent )
 			return;
 		}
 
-		if ( pEvent->Event() == AE_ANTLION_WORKER_DONT_EXPLODE)
+		if ( pEvent->Event() == AE_ANTLION_WORKER_DONT_EXPLODE )
 		{
 			m_bDontExplode = true;
 			return;
@@ -1152,44 +1154,44 @@ void CNPC_Antlion::HandleAnimEvent( animevent_t *pEvent )
 
 #endif // HL2_EPISODIC
 
-	if ( pEvent->Event() == AE_ANTLION_WALK_FOOTSTEP)
+	if ( pEvent->Event() == AE_ANTLION_WALK_FOOTSTEP )
 	{
 		MakeAIFootstepSound( 240.0f );
 		EmitSound( "NPC_Antlion.Footstep", m_hFootstep, pEvent->eventtime );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLION_MELEE_HIT1)
+	if ( pEvent->Event() == AE_ANTLION_MELEE_HIT1 )
 	{
 		MeleeAttack( ANTLION_MELEE1_RANGE, sk_antlion_swipe_damage.GetFloat(), QAngle( 20.0f, 0.0f, -12.0f ), Vector( -250.0f, 1.0f, 1.0f ) );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLION_MELEE_HIT2)
+	if ( pEvent->Event() == AE_ANTLION_MELEE_HIT2 )
 	{
 		MeleeAttack( ANTLION_MELEE1_RANGE, sk_antlion_swipe_damage.GetFloat(), QAngle( 20.0f, 0.0f, 0.0f ), Vector( -350.0f, 1.0f, 1.0f ) );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLION_MELEE_POUNCE)
+	if ( pEvent->Event() == AE_ANTLION_MELEE_POUNCE )
 	{
 		MeleeAttack( ANTLION_MELEE2_RANGE, sk_antlion_swipe_damage.GetFloat(), QAngle( 4.0f, 0.0f, 0.0f ), Vector( -250.0f, 1.0f, 1.0f ) );
 		return;
 	}
 		
-	if ( pEvent->Event() == AE_ANTLION_OPEN_WINGS)
+	if ( pEvent->Event() == AE_ANTLION_OPEN_WINGS )
 	{
 		SetWings( true );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLION_CLOSE_WINGS)
+	if ( pEvent->Event() == AE_ANTLION_CLOSE_WINGS )
 	{
 		SetWings( false );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLION_VANISH)
+	if ( pEvent->Event() == AE_ANTLION_VANISH )
 	{
 		AddSolidFlags( FSOLID_NOT_SOLID );
 		m_takedamage	= DAMAGE_NO;
@@ -1199,7 +1201,7 @@ void CNPC_Antlion::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLION_BURROW_IN)
+	if ( pEvent->Event() == AE_ANTLION_BURROW_IN )
 	{
 		//Burrowing sound
 		EmitSound( "NPC_Antlion.BurrowIn" );
@@ -1218,7 +1220,7 @@ void CNPC_Antlion::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLION_BURROW_OUT)
+	if ( pEvent->Event() == AE_ANTLION_BURROW_OUT )
 	{
 		EmitSound( "NPC_Antlion.BurrowOut" );
 
@@ -1234,32 +1236,32 @@ void CNPC_Antlion::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLION_FOOTSTEP_SOFT)
+	if ( pEvent->Event() == AE_ANTLION_FOOTSTEP_SOFT )
 	{
 		EmitSound( "NPC_Antlion.FootstepSoft", pEvent->eventtime );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLION_FOOTSTEP_HEAVY)
+	if ( pEvent->Event() == AE_ANTLION_FOOTSTEP_HEAVY )
 	{
 		EmitSound( "NPC_Antlion.FootstepHeavy", pEvent->eventtime );
 		return;
 	}
 	
 	
-	if ( pEvent->Event() == AE_ANTLION_MELEE1_SOUND)
+	if ( pEvent->Event() == AE_ANTLION_MELEE1_SOUND )
 	{
 		EmitSound( "NPC_Antlion.MeleeAttackSingle" );
 		return;
 	}
 	
-	if ( pEvent->Event() == AE_ANTLION_MELEE2_SOUND)
+	if ( pEvent->Event() == AE_ANTLION_MELEE2_SOUND )
 	{
 		EmitSound( "NPC_Antlion.MeleeAttackDouble" );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLION_START_JUMP)
+	if ( pEvent->Event() == AE_ANTLION_START_JUMP )
 	{
 		StartJump();
 		return;
@@ -1267,7 +1269,7 @@ void CNPC_Antlion::HandleAnimEvent( animevent_t *pEvent )
 
 	// antlion worker events
 #if HL2_EPISODIC
-	if (pEvent->Event() == AE_ANTLION_WORKER_EXPLODE_SCREAM)
+	if ( pEvent->Event() == AE_ANTLION_WORKER_EXPLODE_SCREAM)
 	{
 		if ( GetWaterLevel() < 2 )
 		{
@@ -1940,7 +1942,7 @@ bool CNPC_Antlion::IsJumpLegal( const Vector &startPos, const Vector &apex, cons
 	if ( HasSpawnFlags( SF_ANTLION_USE_GROUNDCHECKS ) && g_test_new_antlion_jump.GetBool() == true )
 	{
 		trace_t	tr;
-		AI_TraceHull( endPos, endPos, GetHullMins(), GetHullMaxs(), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+		AI_TraceHull( endPos, endPos, GetHullMins(), GetHullMaxs(), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 		
 		if ( tr.m_pEnt )
 		{
@@ -1980,28 +1982,28 @@ bool CNPC_Antlion::IsFirmlyOnGround( void )
 	
 	Vector vOrigin = GetAbsOrigin() + Vector( GetHullMins().x, GetHullMins().y, 0 );
 //	NDebugOverlay::Line( vOrigin, vOrigin - Vector( 0, 0, flHeight * 0.5  ), 255, 0, 0, true, 5 );
-	UTIL_TraceLine( vOrigin, vOrigin - Vector( 0, 0, flHeight * 0.5  ), MASK_NPCSOLID, this, GetCollisionGroup(), &tr );
+	UTIL_TraceLine( vOrigin, vOrigin - Vector( 0, 0, flHeight * 0.5  ), GetAITraceMask(), this, GetCollisionGroup(), &tr );
 
 	if ( tr.fraction != 1.0f )
 		 return true;
 	
 	vOrigin = GetAbsOrigin() - Vector( GetHullMins().x, GetHullMins().y, 0 );
 //	NDebugOverlay::Line( vOrigin, vOrigin - Vector( 0, 0, flHeight * 0.5  ), 255, 0, 0, true, 5 );
-	UTIL_TraceLine( vOrigin, vOrigin - Vector( 0, 0, flHeight * 0.5  ), MASK_NPCSOLID, this, GetCollisionGroup(), &tr );
+	UTIL_TraceLine( vOrigin, vOrigin - Vector( 0, 0, flHeight * 0.5  ), GetAITraceMask(), this, GetCollisionGroup(), &tr );
 
 	if ( tr.fraction != 1.0f )
 		 return true;
 
 	vOrigin = GetAbsOrigin() + Vector( GetHullMins().x, -GetHullMins().y, 0 );
 //	NDebugOverlay::Line( vOrigin, vOrigin - Vector( 0, 0, flHeight * 0.5  ), 255, 0, 0, true, 5 );
-	UTIL_TraceLine( vOrigin, vOrigin - Vector( 0, 0, flHeight * 0.5  ), MASK_NPCSOLID, this, GetCollisionGroup(), &tr );
+	UTIL_TraceLine( vOrigin, vOrigin - Vector( 0, 0, flHeight * 0.5  ), GetAITraceMask(), this, GetCollisionGroup(), &tr );
 
 	if ( tr.fraction != 1.0f )
 		 return true;
 
 	vOrigin = GetAbsOrigin() + Vector( -GetHullMins().x, GetHullMins().y, 0 );
 //	NDebugOverlay::Line( vOrigin, vOrigin - Vector( 0, 0, flHeight * 0.5  ), 255, 0, 0, true, 5 );
-	UTIL_TraceLine( vOrigin, vOrigin - Vector( 0, 0, flHeight * 0.5  ), MASK_NPCSOLID, this, GetCollisionGroup(), &tr );
+	UTIL_TraceLine( vOrigin, vOrigin - Vector( 0, 0, flHeight * 0.5  ), GetAITraceMask(), this, GetCollisionGroup(), &tr );
 
 	if ( tr.fraction != 1.0f )
 		 return true;
@@ -2111,7 +2113,7 @@ bool CNPC_Antlion::ShouldJump( void )
 
 	// Try the jump
 	AIMoveTrace_t moveTrace;
-	GetMoveProbe()->MoveLimit( NAV_JUMP, GetAbsOrigin(), targetPos, MASK_NPCSOLID, GetNavTargetEntity(), &moveTrace );
+	GetMoveProbe()->MoveLimit( NAV_JUMP, GetAbsOrigin(), targetPos, GetAITraceMask(), GetNavTargetEntity(), &moveTrace );
 
 	//See if it succeeded
 	if ( IsMoveBlocked( moveTrace.fStatus ) )
@@ -2878,7 +2880,7 @@ int CNPC_Antlion::MeleeAttack1Conditions( float flDot, float flDist )
 		return COND_NOT_FACING_ATTACK;
 
 	trace_t	tr;
-	AI_TraceHull( WorldSpaceCenter(), GetEnemy()->WorldSpaceCenter(), -Vector(8,8,8), Vector(8,8,8), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+	AI_TraceHull( WorldSpaceCenter(), GetEnemy()->WorldSpaceCenter(), -Vector(8,8,8), Vector(8,8,8), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 
 	// If the hit entity isn't our target and we don't hate it, don't hit it
 	if ( tr.m_pEnt != GetEnemy() && tr.fraction < 1.0f && IRelationType( tr.m_pEnt ) != D_HT )
@@ -3171,7 +3173,7 @@ bool CNPC_Antlion::ValidBurrowPoint( const Vector &point )
 
 	CTraceFilterSimpleNPCExclude filter( this, COLLISION_GROUP_NONE );
 	AI_TraceHull( point, point+Vector(0,0,1), GetHullMins(), GetHullMaxs(), 
-		MASK_NPCSOLID, &filter, &tr );
+		GetAITraceMask(), &filter, &tr );
 
 	//See if we were able to get there
 	if ( ( tr.startsolid ) || ( tr.allsolid ) || ( tr.fraction < 1.0f ) )
@@ -3325,7 +3327,7 @@ bool CNPC_Antlion::CheckLanding( void )
 	} 
 	
 	// Look below
-	AI_TraceHull( GetAbsOrigin(), testPos, NAI_Hull::Mins( GetHullType() ), NAI_Hull::Maxs( GetHullType() ), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+	AI_TraceHull( GetAbsOrigin(), testPos, NAI_Hull::Mins( GetHullType() ), NAI_Hull::Maxs( GetHullType() ), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 
 	//See if we're about to contact, or have already contacted the ground
 	if ( ( tr.fraction != 1.0f ) || ( GetFlags() & FL_ONGROUND ) )
@@ -4302,7 +4304,7 @@ Vector CNPC_Antlion::BodyTarget( const Vector &posSrc, bool bNoisy /*= true*/ )
 //-----------------------------------------------------------------------------
 // Purpose: Flip the antlion over
 //-----------------------------------------------------------------------------
-void CNPC_Antlion::Flip( bool bZapped, Vector vForce /*= false*/ )
+void CNPC_Antlion::Flip( bool bZapped /*= false*/, Vector vForce /*vec3_origin*/ )
 {
 	// We can't flip an already flipped antlion
 	if ( IsFlipped() )
@@ -4325,8 +4327,9 @@ void CNPC_Antlion::Flip( bool bZapped, Vector vForce /*= false*/ )
 		EmitSound( "NPC_Antlion.ZappedFlip"  );
 	}
 
-	if (vForce != vec3_origin) {
-		CascadePush(vForce);
+	if ( vForce != vec3_origin )
+	{
+		CascadePush( vForce );
 	}
 }
 

@@ -26,13 +26,13 @@
 #include "ai_basenpc.h"
 #include "ai_senses.h"
 #include "ai_memory.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "ammodef.h"
-#include "Sprite.h"
+#include "sprite.h"
 #include "hl2/hl2_player.h"
 #include "soundenvelope.h"
 #include "explode.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "animation.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -297,6 +297,14 @@ void CNPC_CombineCamera::Precache()
 	BaseClass::Precache();
 }
 
+//theaperturecat
+template<typename T>
+void swap(T& a, T& b) {
+	T temp = a;
+	a = b;
+	b = temp;
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Spawn the entity
@@ -355,7 +363,7 @@ void CNPC_CombineCamera::Spawn()
 
 	if (m_nOuterRadius < m_nInnerRadius)
 	{
-		V_swap(m_nOuterRadius, m_nInnerRadius);
+		swap(m_nOuterRadius, m_nInnerRadius);
 	}
 
 	// Do we start active?
@@ -1102,7 +1110,6 @@ void CNPC_CombineCamera::DeathThink()
 	}
 }
 
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : height - 
@@ -1117,17 +1124,17 @@ void CNPC_CombineCamera::SetHeight(float height)
 
 	if (mins.x > maxs.x)
 	{
-		V_swap(mins.x, maxs.x);
+		swap(mins.x, maxs.x);
 	}
 
 	if (mins.y > maxs.y)
 	{
-		V_swap(mins.y, maxs.y);
+		swap(mins.y, maxs.y);
 	}
 
 	if (mins.z > maxs.z)
 	{
-		V_swap(mins.z, maxs.z);
+		swap(mins.z, maxs.z);
 	}
 
 	SetCollisionBounds(mins, maxs);

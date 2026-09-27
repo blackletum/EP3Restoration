@@ -76,6 +76,9 @@ private:
 	virtual float			GetAmmoDamage( CBaseEntity *pAttacker, CBaseEntity *pVictim, int nAmmoType );
 
 	virtual bool			ShouldBurningPropsEmitLight();
+
+	virtual float			FlPlayerFallDamage( CBasePlayer *pPlayer );
+
 public:
 
 	bool AllowDamage( CBaseEntity *pVictim, const CTakeDamageInfo &info );
@@ -95,7 +98,6 @@ private:
 
 	void AdjustPlayerDamageTaken( CTakeDamageInfo *pInfo );
 	float AdjustPlayerDamageInflicted( float damage );
-	float FlPlayerFallDamage(CBasePlayer* pPlayer);
 
 	int						DefaultFOV( void ) { return 75; }
 #endif

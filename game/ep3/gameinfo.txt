@@ -17,9 +17,9 @@
 		{
 			//"Game"	"|gameinfo_path|pak01_dir"
 			"Game"	"|gameinfo_path|."
-			// "Game"	"C:\Program Files (x86)\Steam\steamapps\common\Portal\portal"
-			// "Game"	"swarm"
-			"Game"	"CHANGE THIS"
+			"Game"	"E:\valve_asw_content\ep2_workshop"
+			"Game"	"E:\valve_asw_content\episodic_workshop"
+			"Game"	"E:\valve_asw_content\hl2"
 
 			"Game"	"C:\Program Files (x86)\Steam\steamapps\common\Alien Swarm\swarm_base"
 			"Game"	"C:\Program Files (x86)\Steam\steamapps\common\Alien Swarm\platform"

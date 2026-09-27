@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2005, Valve Corporation, All rights reserved. =======
+//====== Copyright (c) 1996-2005, Valve Corporation, All rights reserved. =======
 //
 // Purpose: 
 //
@@ -31,9 +31,8 @@ struct JeepWaterData_t
 //-----------------------------------------------------------------------------
 class CPropJeep : public CPropVehicleDriveable
 {
-	DECLARE_CLASS( CPropJeep, CPropVehicleDriveable );
-
 public:
+	DECLARE_CLASS( CPropJeep, CPropVehicleDriveable );
 
 	DECLARE_SERVERCLASS();
 	DECLARE_DATADESC();

@@ -12,8 +12,8 @@
 #include "weapon_brickbat.h"
 #include "soundent.h"
 #include "decals.h"
-#include "IEffects.h"
-#include "engine/IEngineSound.h"
+#include "ieffects.h"
+#include "engine/ienginesound.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

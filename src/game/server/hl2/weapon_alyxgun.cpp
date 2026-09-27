@@ -253,7 +253,7 @@ void CWeaponAlyxGun::FireNPCPrimaryAttack( CBaseCombatCharacter *pOperator, bool
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CWeaponAlyxGun::Operator_ForceNPCFire( CBaseCombatCharacter *pOperator, bool bSecondary)
+void CWeaponAlyxGun::Operator_ForceNPCFire( CBaseCombatCharacter *pOperator, bool bSecondary )
 {
 	// Ensure we have enough rounds in the clip
 	m_iClip1++;

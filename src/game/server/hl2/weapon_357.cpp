@@ -6,17 +6,17 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "NPCEvent.h"
+#include "npcevent.h"
 #include "basehlcombatweapon.h"
 #include "basecombatcharacter.h"
-#include "AI_BaseNPC.h"
+#include "ai_basenpc.h"
 #include "player.h"
 #include "gamerules.h"
 #include "in_buttons.h"
 #include "soundent.h"
 #include "game.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "te_effect_dispatch.h"
 #include "gamestats.h"
 
@@ -34,6 +34,7 @@ public:
 
 	CWeapon357( void );
 
+	void	Precache( void );
 	void	PrimaryAttack( void );
 	void	Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
 
@@ -60,6 +61,12 @@ CWeapon357::CWeapon357( void )
 {
 	m_bReloadsSingly	= false;
 	m_bFiresUnderwater	= false;
+}
+
+void CWeapon357::Precache( void )
+{
+	BaseClass::Precache();
+	PrecacheEffect( "ShellEject" );
 }
 
 //-----------------------------------------------------------------------------

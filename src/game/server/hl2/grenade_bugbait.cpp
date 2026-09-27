@@ -9,7 +9,7 @@
 #include "decals.h"
 #include "smoke_trail.h"
 #include "soundent.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "npc_bullseye.h"
 #include "entitylist.h"
 #include "antlion_maker.h"
@@ -165,7 +165,7 @@ void CGrenadeBugBait::BugBaitTouch( CBaseEntity *pOther )
 		pSporeExplosion->SetLocalOrigin( GetAbsOrigin() );
 		pSporeExplosion->m_flSpawnRate			= 8.0f;
 		pSporeExplosion->m_flParticleLifetime	= 2.0f;
-		pSporeExplosion->SetRenderColor( 0.0f, 0.5f, 0.25f);
+		pSporeExplosion->SetRenderColor( 0.0f, 0.5f, 0.25f );
 		pSporeExplosion->SetRenderAlpha(0.15f);
 
 		pSporeExplosion->m_flStartSize = 32.0f;

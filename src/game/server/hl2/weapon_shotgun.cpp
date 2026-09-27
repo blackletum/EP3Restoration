@@ -8,12 +8,12 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "NPCEvent.h"
+#include "npcevent.h"
 #include "basehlcombatweapon_shared.h"
 #include "basecombatcharacter.h"
-#include "AI_BaseNPC.h"
+#include "ai_basenpc.h"
 #include "player.h"
-#include "gamerules.h"		// For g_pGameRules
+#include "gamerules.h"		// for g_pgamerules
 #include "in_buttons.h"
 #include "soundent.h"
 #include "vstdlib/random.h"
@@ -80,7 +80,7 @@ public:
 	void DryFire( void );
 
 	void FireNPCPrimaryAttack( CBaseCombatCharacter *pOperator, bool bUseWeaponAngles );
-	void Operator_ForceNPCFire( CBaseCombatCharacter  *pOperator, bool bSecondary, CBaseEntity* pTarget = NULL);
+	void Operator_ForceNPCFire( CBaseCombatCharacter  *pOperator, bool bSecondary, CBaseEntity *pTarget = NULL );
 	void Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
 
 	DECLARE_ACTTABLE();
@@ -189,28 +189,28 @@ void CWeaponShotgun::FireNPCPrimaryAttack( CBaseCombatCharacter *pOperator, bool
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CWeaponShotgun::Operator_ForceNPCFire( CBaseCombatCharacter *pOperator, bool bSecondary, CBaseEntity* pTarget)
+void CWeaponShotgun::Operator_ForceNPCFire( CBaseCombatCharacter *pOperator, bool bSecondary, CBaseEntity *pTarget )
 {
 	// Ensure we have enough rounds in the clip
 	m_iClip1++;
 
-	if (pTarget) {
-		
+	if ( pTarget )
+	{
 		Vector vecShootOrigin, vecShootDir;
-		WeaponSound(SINGLE_NPC);
+		WeaponSound( SINGLE_NPC );
 		pOperator->DoMuzzleFlash();
 		m_iClip1 = m_iClip1 - 1;
 
 		QAngle	angShootDir;
-		GetAttachment(LookupAttachment("muzzle"), vecShootOrigin, angShootDir);
-		vecShootDir = pTarget->GetAbsOrigin() - vecShootOrigin;
-		VectorNormalize(vecShootDir);
+		GetAttachment( LookupAttachment( "muzzle" ), vecShootOrigin, angShootDir );
+		vecShootDir = pTarget->WorldSpaceCenter() - vecShootOrigin;
+		VectorNormalize( vecShootDir );
 
-		pOperator->FireBullets(8, vecShootOrigin, vecShootDir, GetBulletSpread(), MAX_TRACE_LENGTH, m_iPrimaryAmmoType, 0);
+		pOperator->FireBullets( 8, vecShootOrigin, vecShootDir, GetBulletSpread(), MAX_TRACE_LENGTH, m_iPrimaryAmmoType, 0 );
 	}
 	else
 	{
-		FireNPCPrimaryAttack(pOperator, true);
+		FireNPCPrimaryAttack( pOperator, true );
 	}
 }
 

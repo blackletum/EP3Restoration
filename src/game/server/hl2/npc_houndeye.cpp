@@ -10,12 +10,12 @@
 #include "ai_default.h"
 #include "ai_node.h"
 #include "ai_route.h"
-#include "AI_Navigator.h"
-#include "AI_Motor.h"
-#include "AI_Squad.h"
-#include "AI_TacticalServices.h"
+#include "ai_navigator.h"
+#include "ai_motor.h"
+#include "ai_squad.h"
+#include "ai_tacticalservices.h"
 #include "soundent.h"
-#include "EntityList.h"
+#include "entitylist.h"
 #include "game.h"
 #include "activitylist.h"
 #include "hl2_shareddefs.h"
@@ -23,10 +23,10 @@
 #include "energy_wave.h"
 #include "ai_interactions.h"
 #include "ndebugoverlay.h"
-#include "NPCEvent.h"
+#include "npcevent.h"
 #include "player.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "movevars_shared.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -192,7 +192,7 @@ int CNPC_Houndeye::RangeAttack1Conditions ( float flDot, float flDist )
 	trace_t tr;
 	AI_TraceHull( GetAbsOrigin(), GetAbsOrigin() + Vector(0,0,0.1), 
 					GetHullMins(), GetHullMaxs(),
-					MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+					GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 	if (tr.startsolid)
 	{
 		CBaseEntity *pEntity = tr.m_pEnt;
@@ -614,7 +614,7 @@ void CNPC_Houndeye::NPCThink(void)
 		trace_t tr;
 		AI_TraceHull( GetAbsOrigin(), GetAbsOrigin() + Vector(0,0,1), 
 						GetHullMins(), GetHullMaxs(),
-						MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+						GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 		if (!tr.startsolid)
 		{
 			SetCollisionGroup( COLLISION_GROUP_NONE );
@@ -1071,7 +1071,7 @@ int CNPC_Houndeye::SelectSchedule( void )
 				trace_t tr;
 				AI_TraceHull( GetAbsOrigin(), GetAbsOrigin() + Vector(0,0,1), 
 								GetHullMins(), GetHullMaxs(),
-								MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+								GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 				if (!tr.startsolid)
 				{
 					return SCHED_HOUND_GROUP_ATTACK;
@@ -1101,7 +1101,7 @@ int CNPC_Houndeye::SelectSchedule( void )
 					AngleVectors( GetAbsAngles(), &forward );
 					AI_TraceHull( GetAbsOrigin(), GetAbsOrigin() + forward * -128, 
 						GetHullMins(), GetHullMaxs(),
-						MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+						GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 
 					if ( tr.fraction == 1.0 )
 					{

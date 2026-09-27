@@ -7,7 +7,7 @@
 
 #include "cbase.h"
 #include "basehlcombatweapon.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "npcevent.h"
 #include "in_buttons.h"
 #include "antlion_maker.h"
@@ -167,7 +167,7 @@ void CWeaponBugBait::Drop( const Vector &vecVelocity )
 		pSporeExplosion->m_flSpawnRate			= 16.0f;
 		pSporeExplosion->m_flParticleLifetime	= 0.5f;
 		pSporeExplosion->SetRenderColor( 0.0f, 0.5f, 0.25f );
-		pSporeExplosion->SetRenderAlpha( 0.15f );
+		pSporeExplosion->SetRenderAlpha(0.15f);
 
 		pSporeExplosion->m_flStartSize			= 32;
 		pSporeExplosion->m_flEndSize			= 48;
@@ -266,7 +266,19 @@ void CWeaponBugBait::ThrowGrenade( CBasePlayer *pPlayer )
 {
 	Vector	vForward, vRight, vUp, vThrowPos, vThrowVel;
 	
-	pPlayer->EyeVectors( &vForward, &vRight, &vUp );
+	// TrackIR
+	if ( IsHeadTrackingEnabled() )
+	{
+		QAngle angles;
+		Vector vAim = pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+		VectorAngles(vAim, angles);
+		AngleVectors( angles, &vForward, &vRight, &vUp );
+	}
+	// TrackIR
+	else
+	{
+		pPlayer->EyeVectors( &vForward, &vRight, &vUp );
+	}
 
 	vThrowPos = pPlayer->EyePosition();
 

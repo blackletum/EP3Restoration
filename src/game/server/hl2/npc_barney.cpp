@@ -27,7 +27,7 @@
 #include "npcevent.h"
 #include "activitylist.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "sceneentity.h"
 #include "ai_behavior_functank.h"
 

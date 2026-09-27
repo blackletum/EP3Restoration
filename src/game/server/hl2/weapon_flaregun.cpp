@@ -8,11 +8,11 @@
 #include "cbase.h"
 #include "player.h"
 #include "gamerules.h"
-#include "basehlcombatweapon.h"
+#include "basecombatweapon.h" // terror
 #include "decals.h"
 #include "soundenvelope.h"
-#include "IEffects.h"
-#include "engine/IEngineSound.h"
+#include "ieffects.h"
+#include "engine/ienginesound.h"
 #include "weapon_flaregun.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -42,6 +42,7 @@
 #define	FLARE_LAUNCH_SPEED	1500
 
 LINK_ENTITY_TO_CLASS( env_flare, CFlare );
+PRECACHE_REGISTER(env_flare);	// TERROR
 
 BEGIN_DATADESC( CFlare )
 
@@ -89,7 +90,7 @@ CFlare *CFlare::GetActiveFlares( void )
 
 Class_T CFlare::Classify( void )
 {
-	return CLASS_FLARE; 
+	return CLASS_NONE;	// TERROR: was CLASS_FLARE; 
 }
 
 CBaseEntity *CreateFlare( Vector vOrigin, QAngle Angles, CBaseEntity *pOwner, float flDuration )
@@ -154,6 +155,7 @@ void CFlare::Precache( void )
 	PrecacheModel("models/weapons/flare.mdl" );
 
 	PrecacheScriptSound( "Weapon_FlareGun.Burn" );
+	PrecacheScriptSound( "Weapon_FlareGun.Single" );	// TERROR
 
   	// FIXME: needed to precache the fire model.  Shouldn't have to do this.
   	UTIL_PrecacheOther( "_firesmoke" );
@@ -385,6 +387,19 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 		g_pEffects->Sparks( GetAbsOrigin() );
 	}
 
+	// TERROR:  just ignite - no damage
+	if ( pOther && pOther->m_takedamage )
+	{
+		CBaseAnimating *pAnim;
+
+		pAnim = dynamic_cast<CBaseAnimating*>(pOther);
+		if( pAnim )
+		{
+			pAnim->Ignite( 30.0f, false );
+		}
+	}
+
+#if 0 // TERROR - no damage
 	//If the flare hit a person or NPC, do damage here.
 	if ( pOther && pOther->m_takedamage )
 	{
@@ -426,12 +441,14 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 		return;
 	}
 	else
+#endif
 	{
 		// hit the world, check the material type here, see if the flare should stick.
 		trace_t tr;
 		tr = CBaseEntity::GetTouchTrace();
 
 		//Only do this on the first bounce
+#if 0 // TERROR - no sticking
 		if ( m_nBounces == 0 )
 		{
 			const surfacedata_t *pdata = physprops->GetSurfaceData( tr.surface.surfaceProps );	
@@ -472,6 +489,7 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 				}
 			}
 		}
+#endif
 
 		//Scorch decal
 		if ( GetAbsVelocity().LengthSqr() > (250*250) )
@@ -491,7 +509,7 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 		m_nBounces++;
 
 		//After the first bounce, smacking into whoever fired the flare is fair game
-		SetOwnerEntity( this );	
+		SetOwnerEntity( NULL );	
 
 		// Slow down
 		Vector vecNewVelocity = GetAbsVelocity();

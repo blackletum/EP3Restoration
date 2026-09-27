@@ -4,10 +4,18 @@
 //
 //=============================================================================//
 #include "cbase.h"
+#include "coordsize.h"
 #include "hl_gamemovement.h"
+#include "movevars_shared.h"
 #include "in_buttons.h"
 #include "utlrbtree.h"
 #include "hl2_shareddefs.h"
+
+#if !defined( CLIENT_DLL )
+#ifdef HL2_EP3
+#include "ep3/weapon_icegun.h"
+#endif // HL2_EP3
+#endif // !CLIENT_DLL
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -1090,21 +1098,6 @@ bool CHL2GameMovement::LadderMove( void )
 			}
 		}
 
-#ifdef _XBOX
-		if( sv_ladders_useonly.GetBool() )
-		{
-			// Stick up climbs up, stick down climbs down. No matter which way you're looking.
-			if ( mv->m_nButtons & IN_FORWARD )
-			{
-				factor = 1.0f;
-			}
-			else if( mv->m_nButtons & IN_BACK )
-			{
-				factor = -1.0f;
-			}
-		}
-#endif//_XBOX
-
 		mv->m_vecVelocity = MAX_CLIMB_SPEED * factor * ladderUp;
 	}
 	else
@@ -1130,17 +1123,480 @@ void CHL2GameMovement::SetGroundEntity( trace_t *pm )
 
 bool CHL2GameMovement::CanAccelerate()
 {
-#ifdef HL2MP 
-	if ( player->IsObserver() )
-	{
-		return true;
-	}
-#endif
-
 	BaseClass::CanAccelerate();
 
 	return true;
 }
+
+
+#if !defined( CLIENT_DLL )
+#ifdef HL2_EP3
+//-----------------------------------------------------------------------------
+// Does the basic move attempting to climb up step heights.  It uses
+// mv->GetAbsOrigin() and mv->m_vecVelocity.
+//
+// It returns a new mv->GetAbsOrigin(), mv->m_vecVelocity, and mv->m_outStepHeight.
+//-----------------------------------------------------------------------------
+void CHL2GameMovement::IceStepMove( Vector &vecDestination, trace_t &trace )
+{
+	//
+	// Save the move position and velocity in case we need to put it back later.
+	//
+	Vector vecPos, vecVel;
+	VectorCopy( mv->GetAbsOrigin(), vecPos );
+	VectorCopy( mv->m_vecVelocity, vecVel );
+
+	//
+	// First try walking straight to where they want to go.
+	//
+	Vector vecEndPos;
+	VectorCopy( vecDestination, vecEndPos );
+	TryPlayerMove( &vecEndPos, &trace );
+
+	//
+	// mv now contains where they ended up if they tried to walk straight there.
+	// Save those results for use later.
+	//	
+	Vector vecDownPos, vecDownVel;
+	VectorCopy( mv->GetAbsOrigin(), vecDownPos );
+	VectorCopy( mv->m_vecVelocity, vecDownVel );
+
+	//
+	// Reset original values to try some other things.
+	//
+	mv->SetAbsOrigin( vecPos );
+	VectorCopy( vecVel, mv->m_vecVelocity );
+
+	//
+	// Move up a stair height.
+	// Slide forward at the same velocity but from the higher position.
+	//
+	VectorCopy( mv->GetAbsOrigin(), vecEndPos );
+	if ( player->m_Local.m_bAllowAutoMovement )
+	{
+		vecEndPos.z += player->m_Local.m_flStepSize + DIST_EPSILON;
+	}
+
+	// Only step up as high as we have headroom to do so.	
+	TracePlayerBBox( mv->GetAbsOrigin(), vecEndPos, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, trace );
+	if ( !trace.startsolid && !trace.allsolid )
+	{
+		mv->SetAbsOrigin( trace.endpos );
+	}
+	TryPlayerMove();
+
+	//
+	// Move down a stair (attempt to).
+	// Slide forward at the same velocity from the lower position.
+	//
+	VectorCopy( mv->GetAbsOrigin(), vecEndPos );
+	if ( player->m_Local.m_bAllowAutoMovement )
+	{
+		vecEndPos.z -= player->m_Local.m_flStepSize + DIST_EPSILON;
+	}
+
+	TracePlayerBBox( mv->GetAbsOrigin(), vecEndPos, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, trace );
+
+	// If we are not on the ground any more then use the original movement attempt.
+	if ( 0 ) //trace.plane.normal[2] < 0.7 )
+	{
+		//Msg( "HITTING A WALL\n" );
+
+		mv->SetAbsOrigin( vecDownPos );
+		VectorCopy( vecDownVel, mv->m_vecVelocity );
+		float flStepDist = mv->GetAbsOrigin().z - vecPos.z;
+		if ( flStepDist > 0.0f )
+		{
+			mv->m_outStepHeight += flStepDist;
+		}
+
+		return;
+	}
+
+	// If the trace ended up in empty space, copy the end over to the origin.
+	if ( !trace.startsolid && !trace.allsolid )
+	{
+		mv->SetAbsOrigin( trace.endpos );
+	}
+
+	// Copy this origin to up.
+	Vector vecUpPos;
+	VectorCopy( mv->GetAbsOrigin(), vecUpPos );
+
+	// decide which one went farther
+	float flDownDist = ( vecDownPos.x - vecPos.x ) * ( vecDownPos.x - vecPos.x ) + ( vecDownPos.y - vecPos.y ) * ( vecDownPos.y - vecPos.y );
+	float flUpDist = ( vecUpPos.x - vecPos.x ) * ( vecUpPos.x - vecPos.x ) + ( vecUpPos.y - vecPos.y ) * ( vecUpPos.y - vecPos.y );
+	if ( flDownDist > flUpDist )
+	{
+		mv->SetAbsOrigin( vecDownPos );
+		VectorCopy( vecDownVel, mv->m_vecVelocity );
+	}
+	else 
+	{
+		// copy z value from slide move
+		mv->m_vecVelocity.z = vecDownVel.z;
+	}
+
+	float flStepDist = mv->GetAbsOrigin().z - vecPos.z;
+	if ( flStepDist > 0 )
+	{
+		mv->m_outStepHeight += flStepDist;
+	}
+
+	//Msg( "Stepped up from %f %f %f -> %f %f %f\n", vecPos.x, vecPos.y, vecPos.z, mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z );
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Try to keep a walking player on the ice when running down slopes etc
+//-----------------------------------------------------------------------------
+void CHL2GameMovement::StayOnIce( void )
+{
+	trace_t trace;
+	Vector start( mv->GetAbsOrigin() );
+	Vector end( mv->GetAbsOrigin() );
+	start.z += 2;
+	end.z -= player->GetStepSize();
+
+	// See how far up we can go without getting stuck
+
+	TracePlayerBBox( mv->GetAbsOrigin(), start, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, trace );
+	start = trace.endpos;
+
+	// using trace.startsolid is unreliable here, it doesn't get set when
+	// tracing bounding box vs. terrain
+
+	// Now trace down from a known safe position
+	TracePlayerBBox( start, end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, trace );
+	if ( trace.fraction > 0.0f &&			// must go somewhere
+		trace.fraction < 1.0f &&			// must hit something
+		!trace.startsolid )					// can't be embedded in a solid
+	{
+		float flDelta = fabs(mv->GetAbsOrigin().z - trace.endpos.z);
+
+		//This is incredibly hacky. The real problem is that trace returning that strange value we can't network over.
+		if ( flDelta > 0.5f * COORD_RESOLUTION)
+		{
+			mv->SetAbsOrigin( trace.endpos );
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+// Handles movement when the player is on an ice sculpture.
+//  vecDestination - where the player wants to go. Receives where they actually went.
+//  trace - trace results when the player tried to go straight there
+//-----------------------------------------------------------------------------
+static ConVar icegun_timebased_speed( "icegun_timebased_speed", "1" );
+static ConVar icegun_maxspeed_time( "icegun_maxspeed_time", "2.5" );
+static ConVar icegun_maxspeed( "icegun_maxspeed", "600" );
+static ConVar icegun_surf_dont_loose_forward_speed_while_turning( "icegun_maxspeed", "1" );
+
+void CHL2GameMovement::IceMove( icesphere_t *pGround )
+{
+	bool bGamePaused = ( gpGlobals->frametime == 0.0f );
+	if ( bGamePaused )
+		return;
+
+	//
+	// Calculate the direction they are trying to go on the ice based on their
+	// facing direction and movement commands.
+	//
+	Vector wishvel;
+	float spd;
+	float fmove, smove;
+	Vector wishdir;
+	float wishspeed;
+
+	Vector dest;
+	trace_t pm;
+	
+	//Msg( "mv->spd = %f\n", mv->m_vecVelocity.Length() ); 
+
+	// Determine facing angles
+	Vector forward, right, up;
+	AngleVectors( mv->m_vecViewAngles, &forward, &right, &up ); 
+
+	// Copy movement amounts
+	fmove = mv->m_flForwardMove;
+	smove = mv->m_flSideMove;
+	
+	// If they released the forward key, start decaying the ice time.
+	if ( !mv->m_flForwardMove )
+	{
+		// FIXME: decay rather than reset?
+		m_flIceTime = gpGlobals->curtime;
+	}
+	else if ( icegun_timebased_speed.GetBool() )
+	{
+		float flTargetSpeed = icegun_maxspeed.GetFloat();
+		if ( mv->m_flForwardMove < 0 )
+		{
+			flTargetSpeed *= -1;
+		}
+		
+		float flIceInterval = gpGlobals->curtime - m_flIceTime;
+		fmove = SimpleSplineRemapValClamped( flIceInterval, 0, icegun_maxspeed_time.GetFloat(),  mv->m_flForwardMove, flTargetSpeed );
+	}
+
+	float flForwardDot = 1;
+
+	// FIXFIX!!!
+	if ( pGround->m_vecNextDelta != vec3_origin )
+	{
+		//debugoverlay->AddBoxOverlay( pGround->GetAbsOrigin(), Vector( -1, -1, -1 ), Vector( 1, 1, 1 ), QAngle( 0, 0, 0 ), 0, 255, 0, 255, 60.0 );
+		//debugoverlay->AddLineOverlay( pGround->GetAbsOrigin(), pGround->GetAbsOrigin() + pGround->m_vecNextDelta, 0, 255, 0, 255, 60.0 );
+		
+		flForwardDot = DotProduct( forward, pGround->m_vecNextDelta );
+		forward = pGround->m_vecNextDelta;
+
+		if ( icegun_surf_dont_loose_forward_speed_while_turning.GetBool() )
+		{
+			// Don't slow down our movement while turning
+			if ( flForwardDot >= 0.0f )
+			{
+				flForwardDot = 1.0f;
+			}
+			else
+			{
+				flForwardDot = -1.0f;
+			}
+		}
+
+		if ( forward.z != 0 )
+		{
+			forward.z = 0;
+		}
+		VectorNormalize( forward );
+	}
+
+	//
+	// Players can't try to move in Z with movement keys, so
+	// zero out z components of movement vectors.
+	//
+	if ( forward.z != 0 )
+	{
+		forward.z = 0;
+		VectorNormalize( forward );
+	}
+
+	if ( right.z != 0 )
+	{
+		right.z = 0;
+		VectorNormalize( right );
+	}
+	
+	//
+	// Build the 2 components of the desired movement vector.
+	// The length of each vector is the desired speed in that direction.
+	//
+	Vector vecForwardMove = forward * fmove * flForwardDot;
+	Vector vecRightMove = right * smove;
+
+	//
+	// If they are facing within +/- 60 degrees of the ice extrusion direction,
+	// project their forward velocity along the ice extrusion direction.
+	//
+	// Let them strafe whichever way they want so if they want to sidestep off
+	// the ice they can.
+	//
+	/*Vector vecExtrudeDir2D = pGround->m_vecExtrudeDir;
+	vecExtrudeDir2D.z = 0;
+	VectorNormalize( vecExtrudeDir2D );
+	
+	float flForwardDot = DotProduct( forward, vecExtrudeDir2D );
+	if ( fabs( flForwardDot ) > 0.5 ) // +/- 60 degrees
+	{
+		//Msg( "dot=%f, correcting\n", flForwardDot );
+		vecForwardMove = flForwardDot * fmove * pGround->m_vecExtrudeDir;
+	}*/
+
+	wishvel = vecForwardMove + vecRightMove;
+
+	mv->m_vecVelocity = wishvel;
+	
+	VectorCopy( wishvel, wishdir );   // Determine magnitude of speed of move
+	wishspeed = VectorNormalize(wishdir);
+	
+	// Accelerate mv velocity towards wishspeed.
+	Accelerate( wishdir, wishspeed, sv_accelerate.GetFloat() );
+
+	// Add in any base velocity to the current velocity.
+	VectorAdd( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
+
+	spd = VectorLength( mv->m_vecVelocity );
+
+	// Limit max velocity	
+	float flMaxSpeed = icegun_maxspeed.GetFloat();
+	if ( ( flMaxSpeed > 0 ) && ( spd > flMaxSpeed ) )
+	{
+		mv->m_vecVelocity *= flMaxSpeed / spd;
+	}
+	
+	// If we're moving slowly enough, just stop.
+	if ( fabs( spd ) < 1.0f )
+	{
+		mv->m_vecVelocity.Init();
+
+		// Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+		VectorSubtract( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
+		return;
+	}
+
+	// first try just moving to the destination	
+	dest = mv->GetAbsOrigin() + mv->m_vecVelocity * gpGlobals->frametime;
+
+	// first try moving directly to the next spot
+	TracePlayerBBox( mv->GetAbsOrigin(), dest, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm );
+
+	// If we made it all the way, then copy trace end as new player position.
+	mv->m_outWishVel += wishdir * wishspeed;
+
+	if ( pm.fraction == 1 )
+	{
+		//Msg( "Icemove: Made it all the way from %f %f %f -> %f %f %f\n", mv->GetAbsOrigin().x, mv->GetAbsOrigin().y, mv->GetAbsOrigin().z, pm.endpos.x, pm.endpos.y, pm.endpos.z );
+		mv->SetAbsOrigin( pm.endpos );
+
+		// Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+		VectorSubtract( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
+
+		StayOnIce();
+		return;
+	}
+
+	IceStepMove( dest, pm );
+
+	// IceStepMove may have deflected us upwards due to collisions with the ice.
+	// Eliminate velocity in z to keep us on the surface of the ice.
+	//spd = mv->m_vecVelocity.Length();
+	if ( mv->m_vecVelocity.z != 0 )
+	{
+		mv->m_vecVelocity.z = 0;
+		VectorNormalize( mv->m_vecVelocity );
+		mv->m_vecVelocity *= spd;
+	}
+
+	// Now pull the base velocity back out. Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+	VectorSubtract( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
+
+	StayOnIce();
+}
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void CHL2GameMovement::WalkMove()
+{
+	//
+	// If we left the surface of the ice because our momentum carried us,
+	// pretend we're still on it.
+	//
+	CBaseEntity *pGround = player->GetGroundEntity();
+	if ( !pGround )
+	{
+		pGround = m_pOldGround;
+	}
+	
+	if ( pGround && FClassnameIs( pGround, "ice_sculpture" ) )
+	{
+		if ( m_flIceTime == 0 )
+		{
+			// They just got on a sculpture
+			m_flIceTime = gpGlobals->curtime;
+		}
+		
+		m_pOldGround = static_cast<CIceSculpture *>( pGround );
+
+		icesphere_t *pIceSphere = NULL;
+		m_pOldGround->GetIceSphere( player->GetAbsOrigin(), &pIceSphere );
+		IceMove( pIceSphere );
+	}
+	else
+	{
+		m_flIceTime = 0;
+		m_pOldGround = NULL;
+		BaseClass::WalkMove();
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void CHL2GameMovement::AirMove( void )
+{
+	int			i;
+	Vector		wishvel;
+	float		fmove, smove;
+	Vector		wishdir;
+	float		wishspeed;
+	Vector forward, right, up;
+
+	AngleVectors (mv->m_vecViewAngles, &forward, &right, &up);  // Determine movement angles
+
+	// Copy movement amounts
+	fmove = mv->m_flForwardMove;
+	smove = mv->m_flSideMove;
+
+	// Zero out z components of movement vectors
+	forward[2] = 0;
+	right[2]   = 0;
+	VectorNormalize(forward);  // Normalize remainder of vectors
+	VectorNormalize(right);    // 
+
+	for (i=0 ; i<2 ; i++)       // Determine x and y parts of velocity
+		wishvel[i] = forward[i]*fmove + right[i]*smove;
+	wishvel[2] = 0;             // Zero out z part of velocity
+
+	VectorCopy (wishvel, wishdir);   // Determine magnitude of speed of move
+	
+	/*if ( Icegun_IsBuildingSculpture() )
+	{
+		Vector vecBuildPos;
+		Icegun_GetBuildPosition( vecBuildPos );
+
+		debugoverlay->AddBoxOverlay( vecBuildPos, Vector( -4, -4, -4 ), Vector( 4, 4, 4 ), QAngle( 0, 0, 0 ), 255, 0, 0, 255, 10.0 );
+
+		Vector vecDelta = vecBuildPos - mv->GetAbsOrigin();
+
+		//float flBuildDist = VectorNormalize( vecDelta );
+
+		//vecDelta *= icegun_attract_force.GetFloat() / ( flBuildDist * flBuildDist );
+
+		debugoverlay->AddBoxOverlay( mv->GetAbsOrigin(), Vector( -1, -1, -1 ), Vector( 1, 1, 1 ), QAngle( 0, 0, 0 ), 0, 255, 0, 255, 10.0 );
+		debugoverlay->AddLineOverlay( mv->GetAbsOrigin(), vecBuildPos, 0, 255, 0, 255, 10.0 );
+
+		wishdir.x = vecDelta.x * 600;// - mv->m_vecVelocity.x;
+		wishdir.y = vecDelta.y * 600;// - mv->m_vecVelocity.y;
+	}*/
+	
+	wishspeed = VectorNormalize(wishdir);
+
+	//
+	// clamp to server defined max speed
+	//
+	if ( wishspeed != 0 && (wishspeed > mv->m_flMaxSpeed))
+	{
+		VectorScale (wishvel, mv->m_flMaxSpeed/wishspeed, wishvel);
+		wishspeed = mv->m_flMaxSpeed;
+	}
+
+	//float oldZ = mv->m_vecVelocity.z;
+	//mv->m_vecVelocity = wishdir * wishspeed;
+	//mv->m_vecVelocity.z = oldZ;
+
+	AirAccelerate( wishdir, wishspeed, 100 ); //sv_airaccelerate.GetFloat() );*/
+
+	// Add in any base velocity to the current velocity.
+	VectorAdd( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
+
+	TryPlayerMove();
+
+	// Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+	VectorSubtract( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
+}
+#endif // HL2_EP3
+#endif // !CLIENT_DLL
 
 
 #ifndef PORTAL	// Portal inherits from this but needs to declare it's own global interface

@@ -8,6 +8,7 @@
 #define HL2_PLAYER_H
 #pragma once
 
+
 #include "player.h"
 #include "hl2_playerlocaldata.h"
 #include "simtimer.h"
@@ -30,6 +31,7 @@ enum HL2PlayerPhysFlag_e
 };
 
 class IPhysicsPlayerController;
+class CLogicPlayerProxy;
 
 struct commandgoal_t
 {
@@ -178,7 +180,9 @@ public:
 	bool IsZooming( void );
 	void CheckSuitZoom( void );
 
-
+#ifdef HL2_EP3
+	void UpdateWooshSounds( void );
+#endif
 
 	// Walking
 	void StartWalking( void );
@@ -222,11 +226,15 @@ public:
 	virtual bool		Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex = 0 );
 	virtual bool		Weapon_CanSwitchTo( CBaseCombatWeapon *pWeapon );
 
+	void FirePlayerProxyOutput( const char *pszOutputName, variant_t variant, CBaseEntity *pActivator, CBaseEntity *pCaller );
+
+	CLogicPlayerProxy	*GetPlayerProxy( void );
+
 	// Flashlight Device
 	void				CheckFlashlight( void );
 	int					FlashlightIsOn( void );
-	virtual bool 		FlashlightTurnOn( bool playSound = false );
-	virtual void		FlashlightTurnOff( bool playSound = false );
+	void				FlashlightTurnOn( void );
+	void				FlashlightTurnOff( void );
 	bool				IsIlluminatedByFlashlight( CBaseEntity *pEntity, float *flReturnDot );
 	void				SetFlashlightPowerDrainScale( float flScale ) { m_flFlashlightPowerDrainScale = flScale; }
 
@@ -321,7 +329,9 @@ protected:	// Jeep: Portal_Player needs access to this variable to overload Play
 
 private:
 
-
+#ifdef HL2_EP3
+	CSoundPatch			*m_pWooshSound;
+#endif
 
 	CAI_Squad *			m_pPlayerAISquad;
 	CSimpleSimTimer		m_CommanderUpdateTimer;
@@ -351,6 +361,8 @@ private:
 	float				m_flMoveTime;		//Amount of time we've been in motion
 	float				m_flLastDamageTime;	//Last time we took damage
 	float				m_flTargetFindTime;
+
+	EHANDLE				m_hPlayerProxy;
 
 	bool				m_bFlashlightDisabled;
 	bool				m_bUseCappedPhysicsDamageTable;

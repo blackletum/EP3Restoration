@@ -6,7 +6,7 @@
 #include "ammodef.h"
 #include "hl2_shareddefs.h"
 #include "filesystem.h"
-#include <KeyValues.h>
+#include <keyvalues.h>
 
 #ifdef CLIENT_DLL
 
@@ -20,8 +20,11 @@
 #include "globalstate.h"
 #include "ai_basenpc.h"
 #include "weapon_physcannon.h"
-#include "ammodef.h"
 #endif
+
+// NOTE: This has to be the last file included!
+#include "tier0/memdbgon.h"
+
 
 #ifdef CLIENT_DLL
 #define CHalfLife2Survival C_HalfLife2Survival
@@ -50,6 +53,10 @@ class CSurvivalSettings
 public:
 
 	CSurvivalSettings();
+	~CSurvivalSettings()
+	{
+		m_Loadout.PurgeAndDeleteElements();
+	}
 
 	CUtlVector<char*, CUtlMemory<char*> > m_Loadout;
 	int		 m_iSpawnHealth;
@@ -202,6 +209,7 @@ void CHalfLife2Survival::ParseSurvivalSettings( KeyValues *pSubKey )
 		if ( !stricmp( pTestKey->GetName(), "weapons" ) )
 		{
 			const char *pLoadout =  pTestKey->GetString();
+			m_SurvivalSettings.m_Loadout.PurgeAndDeleteElements();
 			Q_SplitString( pLoadout, ";", m_SurvivalSettings.m_Loadout );
 		}
 		else if ( !stricmp( pTestKey->GetName(), "spawnhealth" ) )

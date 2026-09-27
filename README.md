@@ -35,11 +35,7 @@ If you use Source Filmmaker and already have it installed, skip to step 2.
 
 
 ## TODO
-* Finish Margarita decompilation
-* Decompile CNPC_Combine::ComputeTeleportToss
-* Decompile CFunc_Pipe_Entrance::FUN_1800a7080
-* Check CFunc_Pipe_Entrance::UpdateOnRemove is correct
-* Make teleport grenades work better (They can currently teleport the player and npcs into walls)
+* Fix blob demomonster/fountain rendering
 
 
 ## Credits

@@ -22,9 +22,9 @@
 #include "gib.h"
 #include "game.h"			
 #include "ai_interactions.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "movevars_shared.h"
 #include "npcevent.h"
 #include "props.h"
@@ -1089,7 +1089,7 @@ void CNPC_Manhack::MaintainGroundHeight( void )
 		GetAbsOrigin() - Vector( 0, 0, minGroundHeight ), 
 		GetHullMins(), 
 		GetHullMaxs(), 
-		(MASK_NPCSOLID_BRUSHONLY), 
+		(GetAITraceMask_BrushOnly()), 
 		this, 
 		COLLISION_GROUP_NONE, 
 		&tr );
@@ -1280,11 +1280,7 @@ void CNPC_Manhack::MoveToTarget(float flInterval, const Vector &vMoveTarget)
 
 		flDist	= FLT_MAX;
 		myDecay	 = 0.3f;
-#ifdef _XBOX
-		myAccel	 = 500;
-#else
 		myAccel	 = 400;
-#endif // _XBOX
 		myZAccel = MIN( 500, zDist / flInterval );
 	}
 	else
@@ -1354,7 +1350,7 @@ void CNPC_Manhack::MoveToTarget(float flInterval, const Vector &vMoveTarget)
 //-----------------------------------------------------------------------------
 int CNPC_Manhack::MoveCollisionMask(void)
 {
-	return MASK_NPCSOLID;
+	return GetAITraceMask();
 }
 
 
@@ -1562,7 +1558,7 @@ void CNPC_Manhack::Bump( CBaseEntity *pHitEntity, float flInterval, trace_t &tr 
 {
 	if ( !VPhysicsGetObject() )
 		return;
-
+		
 	// Surpressing this behavior
 	if ( m_flBumpSuppressTime > gpGlobals->curtime )
 		return;
@@ -1703,6 +1699,9 @@ void CNPC_Manhack::Bump( CBaseEntity *pHitEntity, float flInterval, trace_t &tr 
 //-----------------------------------------------------------------------------
 void CNPC_Manhack::CheckCollisions(float flInterval)
 {
+	if ( IsFrozen() )
+		return;
+
 	// Trace forward to see if I hit anything. But trace forward along the
 	// owner's view direction if you're being carried.
 	Vector vecTraceDir, vecCheckPos;
@@ -1873,6 +1872,12 @@ void CNPC_Manhack::MoveExecute_Alive(float flInterval)
 		// Power is low, and we're no longer stuck in water, so bring power up.
 		m_fEnginePowerScale += 0.05;
 	}
+	
+	if ( IsFrozen() )
+	{
+		m_fEnginePowerScale = 0;
+		vCurrentVelocity.z -= flInterval * sv_gravity.GetFloat();
+	}
 
 	// ----------------------------------------------------------------------------------------
 	// Add time-coherent noise to the current velocity so that it never looks bolted in place.
@@ -1929,7 +1934,7 @@ void CNPC_Manhack::MoveExecute_Alive(float flInterval)
 	SetCurrentVelocity( vCurrentVelocity + m_vForceVelocity );
 	m_vForceVelocity = vec3_origin;
 
-	if( !m_bHackedByAlyx || GetEnemy() )
+	if ( !IsFrozen() && ( !m_bHackedByAlyx || GetEnemy() ) )
 	{
 		// If hacked and no enemy, don't drift!
 		AddNoiseToVelocity( noiseScale );
@@ -1939,7 +1944,7 @@ void CNPC_Manhack::MoveExecute_Alive(float flInterval)
 
 	if( m_flWaterSuspendTime > gpGlobals->curtime )
 	{ 
-		if( UTIL_PointContents( GetAbsOrigin(), (CONTENTS_WATER | CONTENTS_SLIME)) & (CONTENTS_WATER|CONTENTS_SLIME) )
+		if( UTIL_PointContents( GetAbsOrigin(), MASK_WATER ) & (CONTENTS_WATER|CONTENTS_SLIME) )
 		{
 			// Ooops, we're submerged somehow. Move upwards until our origin is out of the water.
 			m_vCurrentVelocity.z = 20.0;
@@ -2028,7 +2033,7 @@ void CNPC_Manhack::MoveExecute_Alive(float flInterval)
 	{
 		PlayFlySound();
 		// SpinBlades( flInterval );
-		// WalkMove( GetCurrentVelocity() * flInterval, MASK_NPCSOLID );
+		// WalkMove( GetCurrentVelocity() * flInterval, GetAITraceMask() );
 	}
 
 //	 NDebugOverlay::Line( GetAbsOrigin(), GetAbsOrigin() + Vector(0, 0, -10 ), 0, 255, 0, true, 0.1);
@@ -2048,6 +2053,15 @@ void CNPC_Manhack::SpinBlades(float flInterval)
 		SetBodygroup( MANHACK_BODYGROUP_BLUR, MANHACK_BODYGROUP_OFF );
 		m_flBladeSpeed = 0.0;
 		m_flPlaybackRate = 1.0;
+		return;
+	}
+
+	if ( IsFrozen() )
+	{
+		SetBodygroup( MANHACK_BODYGROUP_BLADE, MANHACK_BODYGROUP_ON );
+		SetBodygroup( MANHACK_BODYGROUP_BLUR, MANHACK_BODYGROUP_OFF );
+		m_flBladeSpeed = 0.0;
+		m_flPlaybackRate = 0.0;
 		return;
 	}
 
@@ -2161,7 +2175,7 @@ void CNPC_Manhack::MoveExecute_Dead(float flInterval)
 
 	// SetLocalAngles( angles );
 
-	WalkMove( GetCurrentVelocity() * flInterval,MASK_NPCSOLID );
+	WalkMove( GetCurrentVelocity() * flInterval,GetAITraceMask() );
 }
 
 
@@ -2191,6 +2205,9 @@ void CNPC_Manhack::Precache(void)
 	PrecacheScriptSound( "NPC_Manhack.EngineSound1" );
 	PrecacheScriptSound( "NPC_Manhack.EngineSound2"  );
 	PrecacheScriptSound( "NPC_Manhack.BladeSound" );
+
+	PrecacheEffect( "watersplash" );
+	PrecacheEffect( "ManhackSparks" );
 
 	BaseClass::Precache();
 }
@@ -2363,11 +2380,6 @@ void CNPC_Manhack::RunTask( const Task_t *pTask )
 void CNPC_Manhack::Spawn(void)
 {
 	Precache();
-
-#ifdef _XBOX
-	// Always fade the corpse
-	AddSpawnFlags( SF_NPC_FADE_CORPSE );
-#endif // _XBOX
 
 	SetModel( "models/manhack.mdl" );
 	SetHullType(HULL_TINY_CENTERED); 
@@ -2846,6 +2858,11 @@ float CNPC_Manhack::ManhackMaxSpeed( void )
 void CNPC_Manhack::ClampMotorForces( Vector &linear, AngularImpulse &angular )
 {
 	float scale = m_flBladeSpeed / 100.0;
+	
+	if ( IsFrozen() )
+	{
+		scale = 0;
+	}
 
 	// Msg("%.0f %.0f %.0f\n", linear.x, linear.y, linear.z );
 
@@ -2921,11 +2938,7 @@ bool CNPC_Manhack::IsInEffectiveTargetZone( CBaseEntity *pTarget )
 	
 	// Get the enemies top and bottom point
 	pTarget->CollisionProp()->NormalizedToWorldSpace( Vector(0.0f,0.0f,1.0f), &vecMaxPos );
-#ifdef _XBOX
-	pTarget->CollisionProp()->NormalizedToWorldSpace( Vector(0.0f,0.0f,0.5f), &vecMinPos ); // Only half the body is valid
-#else
 	pTarget->CollisionProp()->NormalizedToWorldSpace( Vector(0.0f,0.0f,0.0f), &vecMinPos );
-#endif // _XBOX
 	// See if we're within that range
 	if ( ourHeight > vecMinPos.z && ourHeight < vecMaxPos.z )
 		return true;
@@ -3285,6 +3298,39 @@ bool CNPC_Manhack::CreateVPhysics( void )
 
 	return BaseClass::CreateVPhysics();
 }
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void CNPC_Manhack::Freeze( float flFreezeAmount, CBaseEntity *pFreezer, Ray_t *pFreezeRay )
+{
+	if ( IsFrozen() )
+	{
+		TakeDamage( CTakeDamageInfo( pFreezer, pFreezer, 1, DMG_BLAST ) );
+	}
+	else
+	{
+		if ( flFreezeAmount < 0 )
+		{
+			BaseClass::Freeze( flFreezeAmount, pFreezer );
+		}
+		else
+		{
+			// Stay frozen for 5 seconds
+			m_flFrozen = 1.0f;
+			m_flFrozenThawRate = 0.2f;
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void CNPC_Manhack::Unfreeze()
+{
+	m_flFrozen = 0.0f;
+}
+
 
 //-----------------------------------------------------------------------------
 //

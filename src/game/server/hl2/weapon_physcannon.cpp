@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright (c) 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Physics cannon
 //
@@ -8,11 +8,11 @@
 #include "player.h"
 #include "gamerules.h"
 #include "soundenvelope.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "physics.h"
 #include "in_buttons.h"
 #include "soundent.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "ndebugoverlay.h"
 #include "shake.h"
 #include "hl2_player.h"
@@ -406,7 +406,20 @@ static void ComputePlayerMatrix( CBasePlayer *pPlayer, matrix3x4_t &out )
 	if ( !pPlayer )
 		return;
 
-	QAngle angles = pPlayer->EyeAngles();
+	QAngle angles;
+
+	// TrackIR
+	if ( IsHeadTrackingEnabled() )
+	{
+		Vector vAim = pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+		VectorAngles(vAim, angles);
+	}
+	else
+	{
+		angles = pPlayer->EyeAngles();
+	}
+	// TrackIR
+
 	Vector origin = pPlayer->EyePosition();
 	
 	// 0-360 / -180-180
@@ -689,7 +702,20 @@ QAngle CGrabController::TransformAnglesToPlayerSpace( const QAngle &anglesIn, CB
 	if ( m_bIgnoreRelativePitch )
 	{
 		matrix3x4_t test;
-		QAngle angleTest = pPlayer->EyeAngles();
+		QAngle angleTest;
+
+		// TrackIR
+		if ( IsHeadTrackingEnabled() )
+		{
+			Vector vAim = pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+			VectorAngles(vAim, angleTest);
+		}
+		else
+		{
+			angleTest = pPlayer->EyeAngles();
+		}
+		// TrackIR
+
 		angleTest.x = 0;
 		AngleMatrix( angleTest, test );
 		return TransformAnglesToLocalSpace( anglesIn, test );
@@ -702,7 +728,18 @@ QAngle CGrabController::TransformAnglesFromPlayerSpace( const QAngle &anglesIn, 
 	if ( m_bIgnoreRelativePitch )
 	{
 		matrix3x4_t test;
-		QAngle angleTest = pPlayer->EyeAngles();
+		// TrackIR
+		QAngle angleTest;
+		if ( IsHeadTrackingEnabled() )
+		{
+			Vector vAim = pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+			VectorAngles(vAim, angleTest);
+		}
+		else
+		{
+			angleTest = pPlayer->EyeAngles();
+		}
+		// TrackIR
 		angleTest.x = 0;
 		AngleMatrix( angleTest, test );
 		return TransformAnglesToWorldSpace( anglesIn, test );
@@ -859,8 +896,11 @@ void CGrabController::DetachEntity( bool bClearVelocity )
 	}
 
 	m_attachedEntity = NULL;
-	physenv->DestroyMotionController( m_controller );
-	m_controller = NULL;
+	if ( m_controller )
+	{
+		physenv->DestroyMotionController( m_controller );
+		m_controller = NULL;
+	}
 }
 
 static bool InContactWithHeavyObject( IPhysicsObject *pObject, float heavyMass )
@@ -1126,7 +1166,17 @@ void CPlayerPickupController::Use( CBaseEntity *pActivator, CBaseEntity *pCaller
 		{
 			Shutdown( true );
 			Vector vecLaunch;
-			m_pPlayer->EyeVectors( &vecLaunch );
+			// TrackIR
+			if ( IsHeadTrackingEnabled() )
+			{
+				vecLaunch = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+			}
+			else
+			{
+				m_pPlayer->EyeVectors( &vecLaunch );
+			}
+			// TrackIR
+
 			// JAY: Scale this with mass because some small objects really go flying
 			float massFactor = clamp( pPhys->GetMass(), 0.5, 15 );
 			massFactor = RemapVal( massFactor, 0.5, 15, 0.5, 4 );
@@ -2101,7 +2151,17 @@ void CWeaponPhysCannon::PrimaryAttack( void )
 	{
 		// Punch the object being held!!
 		Vector forward;
-		pOwner->EyeVectors( &forward );
+		// TrackIR
+		if ( IsHeadTrackingEnabled() )
+		{
+			forward = pOwner->GetAutoaimVector(AUTOAIM_5DEGREES);
+		}
+		else
+		{
+			pOwner->EyeVectors( &forward );
+		}
+		// TrackIR
+
 
 		// Validate the item is within punt range
 		CBaseEntity *pHeld = m_grabController.GetAttached();
@@ -2130,7 +2190,16 @@ void CWeaponPhysCannon::PrimaryAttack( void )
 	m_flNextPrimaryAttack = gpGlobals->curtime + 0.5f;
 
 	Vector forward;
-	pOwner->EyeVectors( &forward );
+	// TrackIR
+	if ( IsHeadTrackingEnabled() )
+	{
+		forward = pOwner->GetAutoaimVector(AUTOAIM_5DEGREES);
+	}
+	else
+	{
+		pOwner->EyeVectors( &forward );
+	}
+	// TrackIR
 
 	// NOTE: Notice we're *not* using the mega tracelength here
 	// when you have the mega cannon. Punting has shorter range.
@@ -2448,7 +2517,16 @@ bool CWeaponPhysCannon::AttachObject( CBaseEntity *pObject, const Vector &vPosit
 void CWeaponPhysCannon::FindObjectTrace( CBasePlayer *pPlayer, trace_t *pTraceResult )
 {
 	Vector forward;
-	pPlayer->EyeVectors( &forward );
+	// TrackIR
+	if ( IsHeadTrackingEnabled() )
+	{
+		forward = pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+	}
+	else
+	{
+		pPlayer->EyeVectors( &forward );
+	}
+	// TrackIR
 
 	// Setup our positions
 	Vector	start = pPlayer->Weapon_ShootPosition();
@@ -2501,7 +2579,16 @@ CWeaponPhysCannon::FindObjectResult_t CWeaponPhysCannon::FindObject( void )
 	}
 	
 	Vector forward;
-	pPlayer->EyeVectors( &forward );
+	// TrackIR
+	if ( IsHeadTrackingEnabled() )
+	{
+		forward = pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+	}
+	else
+	{
+		pPlayer->EyeVectors( &forward );
+	}
+	// TrackIR
 
 	// Setup our positions
 	Vector	start = pPlayer->Weapon_ShootPosition();
@@ -2722,7 +2809,20 @@ bool CGrabController::UpdateObject( CBasePlayer *pPlayer, float flError )
 	}
 
 	Vector forward, right, up;
-	QAngle playerAngles = pPlayer->EyeAngles();
+	QAngle playerAngles;
+
+	// TrackIR
+	if ( IsHeadTrackingEnabled() )
+	{
+		Vector vAim = pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+		VectorAngles(vAim, playerAngles);
+	}
+	else
+	{
+		playerAngles = pPlayer->EyeAngles();
+	}
+	// TrackIR
+
 	AngleVectors( playerAngles, &forward, &right, &up );
 
 	if ( HL2GameRules()->MegaPhyscannonActive() )
@@ -3683,6 +3783,7 @@ void CWeaponPhysCannon::StopEffects( bool stopSound )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+static ConVar physcannon_use_blue_sprite( "physcannon_use_blue_sprite", "0" );
 void CWeaponPhysCannon::StartEffects( void )
 {
 	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
@@ -3758,6 +3859,11 @@ void CWeaponPhysCannon::StartEffects( void )
 		if ( bIsMegaCannon )
 		{
 			m_hGlowSprites[i]->SetTransparency( kRenderTransAdd, 255, 255, 255, 128, kRenderFxNone );
+		}
+		// HACK: for Devil's Violin -- use a different sprite color
+		else if ( physcannon_use_blue_sprite.GetBool() )
+		{
+			m_hGlowSprites[i]->SetTransparency( kRenderTransAdd, 165, 179, 200, 64, kRenderFxNoDissipation );
 		}
 		else
 		{

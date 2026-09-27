@@ -21,7 +21,9 @@
 #include "ai_behavior_actbusy.h"
 #include "ai_sentence.h"
 #include "ai_baseactor.h"
-
+#ifdef HL2_EP3
+#include "npc_advisor_roaming.h"
+#endif
 
 // Used when only what combine to react to what the spotlight sees
 #define SF_COMBINE_NO_LOOK	(1 << 16)
@@ -33,7 +35,10 @@
 //=========================================================
 class CNPC_Combine :
 	public CAI_BaseActor
-
+#ifdef HL2_EP3
+	,
+	public CAdvisorCooperationDefaultImpl
+#endif
 {
 	DECLARE_DATADESC();
 	DEFINE_CUSTOM_AI;
@@ -283,12 +288,10 @@ private:
 	void BeginRappel() { m_RappelBehavior.BeginRappel(); }
 
 private:
-	void OnTossedTeleportProjectile( CBaseEntity *pProjectile );//EP3T
+	void OnTossedTeleportProjectile( CBaseEntity *pProjectile );
 	void OnTeleportProjectileAction( CBaseEntity *pProjectile, bool bTeleport );
 
-	void FullyLoadWeaponClips();//[EP3T]
-
-	//void FUN_180139cc0();//Maybe its FullyLoadWeaponClips? It does similar stuff Or maybe FullyLoadWeaponClips is optimized in it???
+	void FullyLoadWeaponClips();
 
 private:
 	int				m_nKickDamage;

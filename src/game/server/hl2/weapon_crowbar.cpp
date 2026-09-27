@@ -32,10 +32,8 @@ ConVar    sk_npc_dmg_crowbar		( "sk_npc_dmg_crowbar","0");
 IMPLEMENT_SERVERCLASS_ST(CWeaponCrowbar, DT_WeaponCrowbar)
 END_SEND_TABLE()
 
-#ifndef HL2MP
 LINK_ENTITY_TO_CLASS( weapon_crowbar, CWeaponCrowbar );
 PRECACHE_WEAPON_REGISTER( weapon_crowbar );
-#endif
 
 acttable_t CWeaponCrowbar::m_acttable[] = 
 {
@@ -201,3 +199,19 @@ void CWeaponCrowbar::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatC
 		break;
 	}
 }
+
+
+void CWeaponCrowbar::SecondaryAttack()
+{
+#ifdef HL2_EP3
+	extern ConVar dev_test_fire_teleport_projectile;
+	extern ConVar sk_teleport_projectile_rechargetime;
+	if ( dev_test_fire_teleport_projectile.GetBool() )
+	{
+		extern void FireTeleportProjectileFn();
+		m_flNextSecondaryAttack = gpGlobals->curtime + sk_teleport_projectile_rechargetime.GetFloat();
+		FireTeleportProjectileFn();
+	}
+#endif
+}
+

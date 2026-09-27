@@ -54,7 +54,7 @@ public:
 	bool	OnBeginMoveAndShoot();
 	void	SpeakAttacking( void );
 
-	virtual float	GetJumpGravity() const		{ return 1.8f; }
+	virtual float	GetDefaultJumpGravity() const		{ return 1.8f; }
 
 	// Crouching
 	Vector  GetCrouchEyeOffset( void ) { return Vector(0,0,50); }

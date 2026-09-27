@@ -16,7 +16,7 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "npc_BaseZombie.h"
+#include "npc_basezombie.h"
 #include "player.h"
 #include "game.h"
 #include "ai_network.h"
@@ -29,7 +29,7 @@
 #include "ai_memory.h"
 #include "ai_senses.h"
 #include "bitstring.h"
-#include "EntityFlame.h"
+#include "entityflame.h"
 #include "hl2_shareddefs.h"
 #include "npcevent.h"
 #include "activitylist.h"
@@ -41,7 +41,7 @@
 #include "rope_shared.h"
 #include "igamesystem.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "props.h"
 #include "hl2_gamerules.h"
 #include "weapon_physcannon.h"
@@ -360,7 +360,9 @@ bool CNPC_BaseZombie::FindNearestPhysicsObject( int iMaxMass )
 			continue;
 
 		vcollide_t *pCollide = modelinfo->GetVCollide( pList[i]->GetModelIndex() );
-		
+		if ( pCollide == NULL )
+			continue;
+
 		Vector objMins, objMaxs;
 		physcollision->CollideGetAABB( &objMins, &objMaxs, pCollide->solids[0], pList[i]->GetAbsOrigin(), pList[i]->GetAbsAngles() );
 
@@ -534,7 +536,7 @@ int CNPC_BaseZombie::MeleeAttack1Conditions ( float flDot, float flDist )
 		// Translate a hit vehicle into its passenger if found
 		if ( GetEnemy() != NULL )
 		{
-#if defined(HL2_DLL) && !defined(HL2MP)
+#if defined(HL2_DLL)
 			// If the player is holding an object, knock it down.
 			if( GetEnemy()->IsPlayer() )
 			{
@@ -579,7 +581,7 @@ int CNPC_BaseZombie::MeleeAttack1Conditions ( float flDot, float flDist )
 
 	trace_t	tr;
 	CTraceFilterNav traceFilter( this, false, this, COLLISION_GROUP_NONE );
-	AI_TraceHull( WorldSpaceCenter(), WorldSpaceCenter() + forward * GetClawAttackRange(), vecMins, vecMaxs, MASK_NPCSOLID, &traceFilter, &tr );
+	AI_TraceHull( WorldSpaceCenter(), WorldSpaceCenter() + forward * GetClawAttackRange(), vecMins, vecMaxs, GetAITraceMask(), &traceFilter, &tr );
 
 	if( tr.fraction == 1.0 || !tr.m_pEnt )
 	{
@@ -1189,7 +1191,7 @@ bool CNPC_BaseZombie::ShouldIgnite( const CTakeDamageInfo &info )
 		m_flBurnDamage += info.GetDamage();
 		m_flBurnDamageResetTime = gpGlobals->curtime + 5;
 
-		if ( m_flBurnDamage >= m_iMaxHealth * 0.1 )
+		if ( m_flBurnDamage >= m_iMaxHealth * 0.1f )
 		{
 			return true;
 		}
@@ -1437,7 +1439,7 @@ void CNPC_BaseZombie::PoundSound()
 //-----------------------------------------------------------------------------
 void CNPC_BaseZombie::HandleAnimEvent( animevent_t *pEvent )
 {
-	if ( pEvent->Event() == AE_NPC_ATTACK_BROADCAST)
+	if ( pEvent->Event() == AE_NPC_ATTACK_BROADCAST )
 	{
 		if( GetEnemy() && GetEnemy()->IsNPC() )
 		{
@@ -1452,33 +1454,33 @@ void CNPC_BaseZombie::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_POUND)
+	if ( pEvent->Event() == AE_ZOMBIE_POUND )
 	{
 		PoundSound();
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_ALERTSOUND)
+	if ( pEvent->Event() == AE_ZOMBIE_ALERTSOUND )
 	{
 		AlertSound();
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_STEP_LEFT)
+	if ( pEvent->Event() == AE_ZOMBIE_STEP_LEFT )
 	{
 		MakeAIFootstepSound( 180.0f );
 		FootstepSound( false );
 		return;
 	}
 	
-	if ( pEvent->Event() == AE_ZOMBIE_STEP_RIGHT)
+	if ( pEvent->Event() == AE_ZOMBIE_STEP_RIGHT )
 	{
 		MakeAIFootstepSound( 180.0f );
 		FootstepSound( true );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_GET_UP)
+	if ( pEvent->Event() == AE_ZOMBIE_GET_UP )
 	{
 		MakeAIFootstepSound( 180.0f, 3.0f );
 		if( !IsOnFire() )
@@ -1490,14 +1492,14 @@ void CNPC_BaseZombie::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_SCUFF_LEFT)
+	if ( pEvent->Event() == AE_ZOMBIE_SCUFF_LEFT )
 	{
 		MakeAIFootstepSound( 180.0f );
 		FootscuffSound( false );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_SCUFF_RIGHT)
+	if ( pEvent->Event() == AE_ZOMBIE_SCUFF_RIGHT )
 	{
 		MakeAIFootstepSound( 180.0f );
 		FootscuffSound( true );
@@ -1505,20 +1507,20 @@ void CNPC_BaseZombie::HandleAnimEvent( animevent_t *pEvent )
 	}
 
 	// all swat animations are handled as a single case.
-	if ( pEvent->Event() == AE_ZOMBIE_STARTSWAT)
+	if ( pEvent->Event() == AE_ZOMBIE_STARTSWAT )
 	{
 		MakeAIFootstepSound( 180.0f );
 		AttackSound();
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_ATTACK_SCREAM)
+	if ( pEvent->Event() == AE_ZOMBIE_ATTACK_SCREAM )
 	{
 		AttackSound();
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_SWATITEM)
+	if ( pEvent->Event() == AE_ZOMBIE_SWATITEM )
 	{
 		CBaseEntity *pEnemy = GetEnemy();
 		if ( pEnemy )
@@ -1570,7 +1572,7 @@ void CNPC_BaseZombie::HandleAnimEvent( animevent_t *pEvent )
 		}
 	}
 	
-	if ( pEvent->Event() == AE_ZOMBIE_ATTACK_RIGHT)
+	if ( pEvent->Event() == AE_ZOMBIE_ATTACK_RIGHT )
 	{
 		Vector right, forward;
 		AngleVectors( GetLocalAngles(), &forward, &right, NULL );
@@ -1582,7 +1584,7 @@ void CNPC_BaseZombie::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_ATTACK_LEFT)
+	if ( pEvent->Event() == AE_ZOMBIE_ATTACK_LEFT )
 	{
 		Vector right, forward;
 		AngleVectors( GetLocalAngles(), &forward, &right, NULL );
@@ -1594,7 +1596,7 @@ void CNPC_BaseZombie::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_ATTACK_BOTH)
+	if ( pEvent->Event() == AE_ZOMBIE_ATTACK_BOTH )
 	{
 		Vector forward;
 		QAngle qaPunch( 45, random->RandomInt(-5,5), random->RandomInt(-5,5) );
@@ -1604,7 +1606,7 @@ void CNPC_BaseZombie::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_POPHEADCRAB)
+	if ( pEvent->Event() == AE_ZOMBIE_POPHEADCRAB )
 	{
 		if ( GetInteractionPartner() == NULL )
 			return;
@@ -1674,11 +1676,6 @@ void CNPC_BaseZombie::Spawn( void )
 	SetSolid( SOLID_BBOX );
 	SetMoveType( MOVETYPE_STEP );
 
-#ifdef _XBOX
-	// Always fade the corpse
-	AddSpawnFlags( SF_NPC_FADE_CORPSE );
-#endif // _XBOX
-
 	m_NPCState			= NPC_STATE_NONE;
 
 	CapabilitiesAdd( bits_CAP_MOVE_GROUND | bits_CAP_INNATE_MELEE_ATTACK1 );
@@ -1718,6 +1715,8 @@ void CNPC_BaseZombie::Precache( void )
 	PrecacheModel( GetTorsoModel() );
 
 	PrecacheParticleSystem( "blood_impact_zombie_01" );
+
+	UTIL_BloodSprayPrecache();
 
 	BaseClass::Precache();
 }
@@ -2022,7 +2021,7 @@ void CNPC_BaseZombie::GatherConditions( void )
 		// between him and the object he's heading for already. 
 		if( gpGlobals->curtime >= m_flNextSwatScan && (m_hPhysicsEnt == NULL) )
 		{
-			FindNearestPhysicsObject( ZOMBIE_MAX_PHYSOBJ_MASS );
+			FindNearestPhysicsObject( ZOMBIE_MAX_PHYSOBJ_MASS * GetModelScale() );
 			m_flNextSwatScan = gpGlobals->curtime + 2.0;
 		}
 	}
@@ -2349,7 +2348,7 @@ bool CNPC_BaseZombie::HeadcrabFits( CBaseAnimating *pCrab )
 					vecSpawnLoc - Vector( 0, 0, 1 ), 
 					NAI_Hull::Mins(HULL_TINY) * CRAB_HULL_EXPAND,
 					NAI_Hull::Maxs(HULL_TINY) * CRAB_HULL_EXPAND,
-					MASK_NPCSOLID,
+					GetAITraceMask(),
 					&traceFilter,
 					&tr );
 

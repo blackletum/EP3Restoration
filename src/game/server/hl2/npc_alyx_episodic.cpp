@@ -17,12 +17,12 @@
 #include "ai_behavior_follow.h"
 #include "npc_alyx_episodic.h"
 #include "npc_headcrab.h"
-#include "npc_BaseZombie.h"
+#include "npc_basezombie.h"
 #include "ai_senses.h"
 #include "ai_memory.h"
 #include "soundent.h"
 #include "props.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "globalstate.h"
 #include "weapon_physcannon.h"
 #include "info_darknessmode_lightsource.h"
@@ -274,8 +274,7 @@ void CNPC_Alyx::HandleAnimEvent( animevent_t *pEvent )
 		animevent_t fakeEvent;
 
 		fakeEvent.pSource = this;
-		fakeEvent._event_highword = EVENT_WEAPON_AR2_ALTFIRE;
-		fakeEvent.event_newsystem = EVENT_WEAPON_AR2_ALTFIRE;
+		fakeEvent.Event(EVENT_WEAPON_AR2_ALTFIRE);
 		GetActiveWeapon()->Operator_HandleAnimEvent( &fakeEvent, this );
 		//m_iNumGrenades--;
 

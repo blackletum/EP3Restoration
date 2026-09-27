@@ -11,8 +11,8 @@
 #include "ai_hull.h"
 #include "ammodef.h"
 #include "gamerules.h"
-#include "IEffects.h"
-#include "engine/IEngineSound.h"
+#include "ieffects.h"
+#include "engine/ienginesound.h"
 #include "ai_behavior.h"
 #include "ai_behavior_assault.h"
 #include "ai_behavior_lead.h"
@@ -73,7 +73,7 @@ public:
 	bool PassesDamageFilter( const CTakeDamageInfo &info );
 	void OnKilledNPC( CBaseCombatCharacter *pKilled );
 
-	bool IsJumpLegal( const Vector &startPos, const Vector &apex, const Vector &endPos ) const;
+	bool IsJumpLegal( const Vector &startPos, const Vector &apex, const Vector &endPos, int, int, int ) const;
 	int SelectFailSchedule( int failedSchedule, int failedTask, AI_TaskFailureCode_t taskFailCode );
 
 	DECLARE_DATADESC();
@@ -675,11 +675,11 @@ int CNPC_Monk::SelectFailSchedule( int failedSchedule, int failedTask, AI_TaskFa
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-bool CNPC_Monk::IsJumpLegal( const Vector &startPos, const Vector &apex, const Vector &endPos ) const
+bool CNPC_Monk::IsJumpLegal( const Vector &startPos, const Vector &apex, const Vector &endPos, int a, int b, int c ) const
 {
 	if ( startPos.z - endPos.z < 0 )
 		return false;
-	return CAI_BaseNPC::IsJumpLegal( startPos, apex, endPos );
+	return BaseClass::IsJumpLegal( startPos, apex, endPos,a,b,c );
 }
 
 //-----------------------------------------------------------------------------

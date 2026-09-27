@@ -18,7 +18,7 @@
 #include "ndebugoverlay.h"
 #include "hl2_shareddefs.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "movevars_shared.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

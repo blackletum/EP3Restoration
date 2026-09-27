@@ -11,11 +11,11 @@
 #include "soundenvelope.h"
 #include "cbasehelicopter.h"
 #include "ai_schedule.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "smoke_trail.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "props.h"
-#include "TemplateEntities.h"
+#include "templateentities.h"
 #include "baseanimating.h"
 #include "ai_senses.h"
 #include "entitylist.h"
@@ -28,7 +28,7 @@
 #include "scripted.h"
 #include "explode.h"
 #include "gib.h"
-#include "EntityFlame.h"
+#include "entityflame.h"
 #include "entityblocker.h"
 #include "eventqueue.h"
 
@@ -436,6 +436,7 @@ void CCombineDropshipContainer::Precache()
 		PrecacheModel( s_pGibModelName[i] );
 	}
 
+	PrecacheEffect( "GunshipTracer" );
 	PropBreakablePrecacheAll( GetModelName() );
 }
 
@@ -451,11 +452,9 @@ void CCombineDropshipContainer::Spawn()
 
 	BaseClass::Spawn();
 
-#ifdef _XBOX
-	AddEffects( EF_NOSHADOW );
-#endif //_XBOX
-
 	m_iHealth = m_iMaxHealth = sk_dropship_container_health.GetFloat();
+
+	m_flFrozenMax = 0.0f;
 }
 
 
@@ -572,11 +571,7 @@ void CCombineDropshipContainer::ThrowFlamingGib( void )
 		pPhysicsObject->SetVelocity(&vecVelocity, &angImpulse );
 	}
 
-	CEntityFlame *pFlame = CEntityFlame::Create( pChunk, false );
-	if ( pFlame != NULL )
-	{
-		pFlame->SetLifetime( pChunk->m_lifeTime );
-	}
+	CEntityFlame::Create( pChunk, pChunk->m_lifeTime );
 
 	SmokeTrail *pSmokeTrail =  SmokeTrail::CreateSmokeTrail();
 	if( pSmokeTrail )
@@ -846,10 +841,6 @@ void CNPC_CombineDropship::Spawn( void )
 {
 	Precache( );
 	SetModel( "models/combine_dropship.mdl" );
-
-#ifdef _XBOX
-	AddEffects( EF_NOSHADOW );
-#endif //_XBOX
 
 	InitPathingData( DROPSHIP_ARRIVE_DIST, DROPSHIP_MIN_CHASE_DIST_DIFF, DROPSHIP_AVOID_DIST );
 

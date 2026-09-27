@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright (c) 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -12,14 +12,14 @@
 #include "player.h"
 #include "rope.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "explode.h"
 #include "util.h"
 #include "in_buttons.h"
 #include "weapon_rpg.h"
 #include "shake.h"
-#include "AI_BaseNPC.h"
-#include "AI_Squad.h"
+#include "ai_basenpc.h"
+#include "ai_squad.h"
 #include "te_effect_dispatch.h"
 #include "triggers.h"
 #include "smoke_trail.h"
@@ -91,7 +91,7 @@ public:
 
 // a list of laser dots to search quickly
 CEntityClassList<CLaserDot> g_LaserDotList;
-CLaserDot *CEntityClassList<CLaserDot>::m_pClassList = NULL;
+template <>  CLaserDot *CEntityClassList<CLaserDot>::m_pClassList = NULL;
 CLaserDot *GetLaserDotList()
 {
 	return g_LaserDotList.m_pClassList;
@@ -136,17 +136,16 @@ CMissile::~CMissile()
 
 //-----------------------------------------------------------------------------
 // Purpose: 
-//
-//
 //-----------------------------------------------------------------------------
 void CMissile::Precache( void )
 {
 	BaseClass::Precache();
+
 	PrecacheModel( "models/weapons/w_missile.mdl" );
 	PrecacheModel( "models/weapons/w_missile_launch.mdl" );
 	PrecacheModel( "models/weapons/w_missile_closed.mdl" );
-	PrecacheEffect( "RPGShotDown" );
 
+	PrecacheEffect( "RPGShotDown" );
 }
 
 
@@ -757,9 +756,6 @@ void CMissile::RemoveCustomDetonator( CBaseEntity *pEntity )
 	}
 }
 
-void CWeaponRPG::Operator_ForceNPCFire(CBaseCombatCharacter* pOperator, bool bSecondary, CBaseEntity* pTarget)//[EP3T]
-{
-}
 
 //-----------------------------------------------------------------------------
 // This entity is used to create little force boxes that the helicopter
@@ -897,7 +893,7 @@ CBaseEntity *CInfoAPCMissileHint::FindAimTarget( CBaseEntity *pMissile, const ch
 // a list of missiles to search quickly
 //-----------------------------------------------------------------------------
 CEntityClassList<CAPCMissile> g_APCMissileList;
-CAPCMissile *CEntityClassList<CAPCMissile>::m_pClassList = NULL;
+template <> CAPCMissile *CEntityClassList<CAPCMissile>::m_pClassList = NULL;
 CAPCMissile *GetAPCMissileList()
 {
 	return g_APCMissileList.m_pClassList;
@@ -989,11 +985,17 @@ CAPCMissile::~CAPCMissile()
 	g_APCMissileList.Remove( this );
 }
 
-void CAPCMissile::Precache()
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CAPCMissile::Precache( void )
 {
 	BaseClass::Precache();
-	PrecacheEffect("WaterSurfaceExplosion");
+
+	PrecacheEffect( "WaterSurfaceExplosion" );
 }
+
 
 //-----------------------------------------------------------------------------
 // Shared initialization code
@@ -1261,7 +1263,7 @@ void CAPCMissile::ComputeActualDotPosition( CLaserDot *pLaserDot, Vector *pActua
 		m_hSpecificTarget = CInfoAPCMissileHint::FindAimTarget( this, STRING( m_strHint ), vecOrigin, vecVelocity );
 	}
 
-	CBaseEntity *pLaserTarget = m_hSpecificTarget ? m_hSpecificTarget : pLaserDot->GetTargetEntity();
+	CBaseEntity *pLaserTarget = m_hSpecificTarget ? m_hSpecificTarget.Get() : pLaserDot->GetTargetEntity();
 	if ( !pLaserTarget )
 	{
 		BaseClass::ComputeActualDotPosition( pLaserDot, pActualDotPosition, pHomingSpeed );
@@ -1502,6 +1504,71 @@ void CWeaponRPG::Activate( void )
 
 //-----------------------------------------------------------------------------
 // Purpose: 
+//-----------------------------------------------------------------------------
+void CWeaponRPG::Operator_ForceNPCFire( CBaseCombatCharacter *pOperator, bool bSecondary, CBaseEntity *pTarget )
+{
+	// Ensure we have enough rounds in the clip
+	m_iClip1++;
+
+	Vector vecShootOrigin;
+	QAngle	angShootDir;
+	GetAttachment( LookupAttachment( "muzzle" ), vecShootOrigin, angShootDir );
+
+	if ( pTarget )
+	{
+		Vector vecShootDir;
+		vecShootDir = pTarget->WorldSpaceCenter() - vecShootOrigin;
+		VectorAngles( vecShootDir, angShootDir );
+	}
+
+	m_hMissile = CMissile::Create( vecShootOrigin, angShootDir, pOperator->edict() );
+
+	m_hMissile->m_hOwner = this;
+
+	// If the shot is clear to the player, give the missile a grace period
+	m_hMissile->SetGracePeriod( 0.3 );
+
+	DecrementAmmo( pOperator );
+
+	SendWeaponAnim( ACT_VM_PRIMARYATTACK );
+	WeaponSound( SINGLE );
+
+	m_iPrimaryAttacks++;
+
+	CSoundEnt::InsertSound( SOUND_COMBAT, GetAbsOrigin(), 1000, 0.2, GetOwner(), SOUNDENT_CHANNEL_WEAPON );
+
+	// Check to see if we should trigger any RPG firing triggers
+	int iCount = g_hWeaponFireTriggers.Count();
+	for ( int i = 0; i < iCount; i++ )
+	{
+		if ( g_hWeaponFireTriggers[i]->IsTouching( pOperator ) )
+		{
+			if ( FClassnameIs( g_hWeaponFireTriggers[i], "trigger_rpgfire" ) )
+			{
+				g_hWeaponFireTriggers[i]->ActivateMultiTrigger( pOperator );
+			}
+		}
+	}
+
+	if( hl2_episodic.GetBool() )
+	{
+		CAI_BaseNPC **ppAIs = g_AI_Manager.AccessAIs();
+		int nAIs = g_AI_Manager.NumAIs();
+
+		string_t iszStriderClassname = AllocPooledString( "npc_strider" );
+
+		for ( int i = 0; i < nAIs; i++ )
+		{
+			if( ppAIs[ i ]->m_iClassname == iszStriderClassname )
+			{
+				ppAIs[ i ]->DispatchInteraction( g_interactionPlayerLaunchedRPG, NULL, m_hMissile );
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
 // Input  : *pEvent - 
 //			*pOperator - 
 //-----------------------------------------------------------------------------
@@ -1566,8 +1633,6 @@ void CWeaponRPG::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatChara
 	}
 }
 
-
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1617,7 +1682,19 @@ void CWeaponRPG::PrimaryAttack( void )
 
 	Vector	vForward, vRight, vUp;
 
-	pOwner->EyeVectors( &vForward, &vRight, &vUp );
+	// TrackIR
+	if ( IsHeadTrackingEnabled() )
+	{
+		QAngle angles;
+		Vector vAim = pOwner->GetAutoaimVector(AUTOAIM_5DEGREES);
+		VectorAngles(vAim, angles);
+		AngleVectors( angles, &vForward, &vRight, &vUp );
+	}
+	else
+	{
+		pOwner->EyeVectors( &vForward, &vRight, &vUp );
+	}
+	// TrackIR
 
 	Vector	muzzlePoint = pOwner->Weapon_ShootPosition() + vForward * 12.0f + vRight * 6.0f + vUp * -3.0f;
 
@@ -1942,7 +2019,16 @@ void CWeaponRPG::UpdateLaserPosition( Vector vecMuzzlePos, Vector vecEndPos )
 		}
 		else
 		{
-			pPlayer->EyeVectors( &forward );
+			// TrackIR
+			if ( IsHeadTrackingEnabled() )
+			{
+				forward = pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+			}
+			else
+			{
+				pPlayer->EyeVectors( &forward );
+			}
+			// TrackIR
 		}
 
 		vecEndPos = vecMuzzlePos + ( forward * MAX_TRACE_LENGTH );

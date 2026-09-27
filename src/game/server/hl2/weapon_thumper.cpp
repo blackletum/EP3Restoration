@@ -8,14 +8,14 @@
 
 #include "cbase.h"
 #include "basehlcombatweapon.h"
-#include "NPCevent.h"
+#include "npcevent.h"
 #include "basecombatcharacter.h"
-#include "AI_BaseNPC.h"
+#include "ai_basenpc.h"
 #include "player.h"
 #include "entitylist.h"
 #include "ndebugoverlay.h"
 #include "soundent.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "rotorwash.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

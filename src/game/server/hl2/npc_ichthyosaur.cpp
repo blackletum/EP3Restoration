@@ -23,7 +23,7 @@
 #include "shake.h"
 #include "ndebugoverlay.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "movevars_shared.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -390,7 +390,7 @@ Vector CNPC_Ichthyosaur::DoProbe( const Vector &probe )
 		fraction = waterLevel;
 	}
 
-	AI_TraceHull( GetAbsOrigin(), probe, GetHullMins(), GetHullMaxs(), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+	AI_TraceHull( GetAbsOrigin(), probe, GetHullMins(), GetHullMaxs(), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 	
 	if ( ( collided == false ) || ( tr.fraction < fraction ) )
 	{
@@ -458,7 +458,7 @@ void CNPC_Ichthyosaur::DragVictim( float moveDist )
 	Vector	newPos = GetAbsOrigin() + ( (forward+(up*0.25f)) * ( moveDist + width + DRAG_OFFSET ) );
 
 	trace_t	tr;
-	AI_TraceEntity( this, m_pVictim->GetAbsOrigin(), newPos, MASK_NPCSOLID, &tr );
+	AI_TraceEntity( this, m_pVictim->GetAbsOrigin(), newPos, GetAITraceMask(), &tr );
 
 	if ( ( tr.fraction == 1.0f ) && ( tr.m_pEnt != this ) )
 	{
@@ -711,10 +711,10 @@ void CNPC_Ichthyosaur::DoMovement( float flInterval, const Vector &MoveTarget, i
 	}
 
 	//Move along the current velocity vector
-	if ( WalkMove( workVelocity * flInterval, MASK_NPCSOLID ) == false )
+	if ( WalkMove( workVelocity * flInterval, GetAITraceMask() ) == false )
 	{
 		//Attempt a half-step
-		if ( WalkMove( (workVelocity*0.5f) * flInterval,  MASK_NPCSOLID) == false )
+		if ( WalkMove( (workVelocity*0.5f) * flInterval,  GetAITraceMask()) == false )
 		{
 			//Restart the velocity
 			//VectorNormalize( m_vecVelocity );
@@ -787,7 +787,7 @@ bool CNPC_Ichthyosaur::SteerAvoidObstacles(Vector &Steer, const Vector &Velocity
 	float	speed = VectorNormalize( dir );
 
 	//Look ahead one second and avoid whatever is in our way.
-	AI_TraceHull( GetAbsOrigin(), GetAbsOrigin() + (dir*speed), GetHullMins(), GetHullMaxs(), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+	AI_TraceHull( GetAbsOrigin(), GetAbsOrigin() + (dir*speed), GetHullMins(), GetHullMaxs(), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 
 	Vector	forward;
 
@@ -853,7 +853,7 @@ bool CNPC_Ichthyosaur::SteerAvoidObstacles(Vector &Steer, const Vector &Velocity
 	}
 
 	//Try to remain 8 feet above the ground.
-	AI_TraceLine( GetAbsOrigin(), GetAbsOrigin() + Vector(0, 0, -ICH_HEIGHT_PREFERENCE), MASK_NPCSOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr );
+	AI_TraceLine( GetAbsOrigin(), GetAbsOrigin() + Vector(0, 0, -ICH_HEIGHT_PREFERENCE), GetAITraceMask_BrushOnly(), this, COLLISION_GROUP_NONE, &tr );
 
 	if ( tr.fraction < 1.0f )
 	{
@@ -949,7 +949,7 @@ void CNPC_Ichthyosaur::MoveFlyExecute( CBaseEntity *pTargetEnt, const Vector &ve
 		trace_t	tr;
 		Vector	goalPos = GetEnemy()->GetAbsOrigin() + ( GetEnemy()->GetSmoothedVelocity() * 0.5f );
 
-		AI_TraceHull( GetAbsOrigin(), goalPos, GetHullMins(), GetHullMaxs(), MASK_NPCSOLID, GetEnemy(), COLLISION_GROUP_NONE, &tr );
+		AI_TraceHull( GetAbsOrigin(), goalPos, GetHullMins(), GetHullMaxs(), GetAITraceMask(), GetEnemy(), COLLISION_GROUP_NONE, &tr );
 
 		if ( tr.fraction == 1.0f )
 		{
@@ -1125,7 +1125,7 @@ bool CNPC_Ichthyosaur::Beached( void )
 
 	testPos = GetAbsOrigin() - Vector( 0, 0, ICH_DEPTH_PREFERENCE );
 	
-	AI_TraceHull( GetAbsOrigin(), testPos, GetHullMins(), GetHullMaxs(), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+	AI_TraceHull( GetAbsOrigin(), testPos, GetHullMins(), GetHullMaxs(), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 
 	return ( tr.fraction < 1.0f );
 }

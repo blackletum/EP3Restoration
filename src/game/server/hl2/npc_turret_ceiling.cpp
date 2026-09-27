@@ -9,13 +9,13 @@
 #include "ai_basenpc.h"
 #include "ai_senses.h"
 #include "ai_memory.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "ammodef.h"
-#include "Sprite.h"
+#include "sprite.h"
 #include "hl2/hl2_player.h"
 #include "soundenvelope.h"
 #include "explode.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "animation.h"
 #include "basehlcombatweapon_shared.h"
 #include "iservervehicle.h"
@@ -1078,6 +1078,13 @@ void CNPC_CeilingTurret::DeathThink( void )
 		SetThink( NULL );
 	}
 }
+//theaperturecat
+template<typename T>
+void swap(T& a, T& b) {
+	T temp = a;
+	a = b;
+	b = temp;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -1093,17 +1100,17 @@ void CNPC_CeilingTurret::SetHeight( float height )
 
 	if ( mins.x > maxs.x )
 	{
-		V_swap( mins.x, maxs.x );
+		swap( mins.x, maxs.x );
 	}
 
 	if ( mins.y > maxs.y )
 	{
-		V_swap( mins.y, maxs.y );
+		swap( mins.y, maxs.y );
 	}
 
 	if ( mins.z > maxs.z )
 	{
-		V_swap( mins.z, maxs.z );
+		swap( mins.z, maxs.z );
 	}
 
 	SetCollisionBounds( mins, maxs );

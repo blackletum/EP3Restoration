@@ -14,9 +14,9 @@
 #include "soundent.h"
 #include "game.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "npcevent.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "ammodef.h"
 #include "beam_shared.h"
 #include "explode.h"
@@ -76,6 +76,8 @@ void CNPC_GroundTurret::Precache( void )
 	PrecacheScriptSound( "NPC_FloorTurret.Die" );
 	PrecacheScriptSound( "NPC_FloorTurret.Ping" );
 	PrecacheScriptSound( "DoSpark" );
+
+	PrecacheEffect( "MuzzleFlash" );
 
 	BaseClass::Precache();
 }

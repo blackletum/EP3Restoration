@@ -14,7 +14,7 @@
 #include "globalstate.h"
 #include "npcevent.h"
 #include "props.h"
-#include "BasePropDoor.h"
+#include "basepropdoor.h"
 
 #include "ai_hint.h"
 #include "ai_localnavigator.h"
@@ -29,7 +29,7 @@
 #include "filesystem.h"
 #include "collisionutils.h"
 #include "grenade_frag.h"
-#include <KeyValues.h>
+#include <keyvalues.h>
 #include "physics_npc_solver.h"
 
 ConVar ai_debug_readiness("ai_debug_readiness", "0" );
@@ -154,6 +154,8 @@ bool CNPC_PlayerCompanion::CreateBehaviors()
 #endif // HL2_EPISODIC	
 
 	AddBehavior( &m_ActBusyBehavior );
+
+	AddBehavior( &m_FightFromCoverBehavior );
 
 #ifdef HL2_EPISODIC
 	AddBehavior( &m_OperatorBehavior );
@@ -1104,7 +1106,7 @@ void CNPC_PlayerCompanion::StartTask( const Task_t *pTask )
 			
 			/*
 			trace_t tr;
-			UTIL_TraceHull( GetAbsOrigin(), GetAbsOrigin(), GetHullMins(), GetHullMaxs(), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+			UTIL_TraceHull( GetAbsOrigin(), GetAbsOrigin(), GetHullMins(), GetHullMaxs(), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 			if ( tr.startsolid && tr.m_pEnt == GetGroundEntity() )
 			{
 				// Allow us to move through the entity for a short time
@@ -1386,7 +1388,7 @@ void CNPC_PlayerCompanion::HandleAnimEvent( animevent_t *pEvent )
 {
 #ifdef HL2_EPISODIC
 	// Create a flare and parent to our hand
-	if ( pEvent->Event() == AE_COMPANION_PRODUCE_FLARE)
+	if ( pEvent->Event() == AE_COMPANION_PRODUCE_FLARE )
 	{
 		m_hFlare = static_cast<CPhysicsProp *>(CreateEntityByName( "prop_physics" ));
 		if ( m_hFlare != NULL )
@@ -1403,7 +1405,7 @@ void CNPC_PlayerCompanion::HandleAnimEvent( animevent_t *pEvent )
 	}
 
 	// Start the flare up with proper fanfare
-	if ( pEvent->Event() == AE_COMPANION_LIGHT_FLARE)
+	if ( pEvent->Event() == AE_COMPANION_LIGHT_FLARE )
 	{
 		if ( m_hFlare != NULL )
 		{
@@ -1414,7 +1416,7 @@ void CNPC_PlayerCompanion::HandleAnimEvent( animevent_t *pEvent )
 	}
 
 	// Drop the flare to the ground
-	if ( pEvent->Event() == AE_COMPANION_RELEASE_FLARE)
+	if ( pEvent->Event() == AE_COMPANION_RELEASE_FLARE )
 	{
 		// Detach
 		m_hFlare->SetParent( NULL );
@@ -3133,7 +3135,7 @@ void CNPC_PlayerCompanion::InputOutsideTransition( inputdata_t &inputdata )
 		pHint->Unlock(0.5); // prevent other squadmates and self from using during transition. 
 
 		pHint->GetPosition( GetHullType(), &teleportLocation );
-		if ( GetNavigator()->CanFitAtPosition( teleportLocation, MASK_NPCSOLID ) )
+		if ( GetNavigator()->CanFitAtPosition( teleportLocation, GetAITraceMask() ) )
 		{
 			bMadeIt = true;
 			if ( !bPathToPlayer && ( playerPos - GetAbsOrigin() ).LengthSqr() > Square(40*12) )

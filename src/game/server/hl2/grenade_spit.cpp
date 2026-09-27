@@ -14,7 +14,7 @@
 #include "smoke_trail.h"
 #include "hl2_shareddefs.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "particle_parse.h"
 #include "particle_system.h"
 #include "soundenvelope.h"
@@ -33,13 +33,14 @@ LINK_ENTITY_TO_CLASS( grenade_spit, CGrenadeSpit );
 BEGIN_DATADESC( CGrenadeSpit )
 
 	DEFINE_FIELD( m_bPlaySound, FIELD_BOOLEAN ),
+	DEFINE_FIELD( m_bSpitDoesPoisonDamage, FIELD_BOOLEAN ),
 
 	// Function pointers
 	DEFINE_ENTITYFUNC( GrenadeSpitTouch ),
 
 END_DATADESC()
 
-CGrenadeSpit::CGrenadeSpit( void ) : m_bPlaySound( true ), m_pHissSound( NULL )
+CGrenadeSpit::CGrenadeSpit( void ) : m_bPlaySound( true ), m_pHissSound( NULL ), m_bSpitDoesPoisonDamage( true )
 {
 }
 
@@ -90,6 +91,10 @@ void CGrenadeSpit::Spawn( void )
 	}
 }
 
+void CGrenadeSpit::SpitDoesPoisonDamage( bool bEnable )
+{
+	m_bSpitDoesPoisonDamage = bEnable;
+}
 
 void CGrenadeSpit::SetSpitSize( int nSize )
 {
@@ -168,14 +173,17 @@ void CGrenadeSpit::GrenadeSpitTouch( CBaseEntity *pOther )
 	}
 
 	// Part normal damage, part poison damage
-	float poisonratio = sk_antlion_worker_spit_grenade_poison_ratio.GetFloat();
+	float poisonratio = m_bSpitDoesPoisonDamage ? sk_antlion_worker_spit_grenade_poison_ratio.GetFloat() : 0.0f;
 
 	// Take direct damage if hit
 	// NOTE: assume that pTrace is invalidated from this line forward!
 	if ( pTraceEnt )
 	{
 		pTraceEnt->TakeDamage( CTakeDamageInfo( this, GetThrower(), m_flDamage * (1.0f-poisonratio), DMG_ACID ) );
-		pTraceEnt->TakeDamage( CTakeDamageInfo( this, GetThrower(), m_flDamage * poisonratio, DMG_POISON ) );
+		if ( poisonratio != 0.0f )
+		{
+			pTraceEnt->TakeDamage( CTakeDamageInfo( this, GetThrower(), m_flDamage * poisonratio, DMG_POISON ) );
+		}
 	}
 
 	CSoundEnt::InsertSound( SOUND_DANGER, GetAbsOrigin(), m_DmgRadius * 2.0f, 0.5f, GetThrower() );
@@ -278,7 +286,10 @@ void CGrenadeSpit::Precache( void )
 	PrecacheModel("models/spitball_small.mdl"); 
 
 	PrecacheScriptSound( "GrenadeSpit.Hit" );
+	PrecacheScriptSound( "NPC_Antlion.PoisonBall" );
 
 	PrecacheParticleSystem( "antlion_spit_player" );
 	PrecacheParticleSystem( "antlion_spit" );
+
+	PrecacheEffect( "watersplash" );
 }

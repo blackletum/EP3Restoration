@@ -10,7 +10,7 @@
 #include "basecombatweapon.h"
 #include "gamerules.h"
 #include "items.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

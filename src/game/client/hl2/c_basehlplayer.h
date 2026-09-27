@@ -51,6 +51,8 @@ public:
 
 	bool				IsWeaponLowered( void ) { return m_HL2Local.m_bWeaponLowered; }
 
+	bool ShouldRegenerateOriginFromCellBits() const;
+
 public:
 
 	C_HL2PlayerLocalData		m_HL2Local;

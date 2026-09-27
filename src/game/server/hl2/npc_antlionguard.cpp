@@ -10,7 +10,7 @@
 #include "ai_memory.h"
 #include "ai_moveprobe.h"
 #include "npcevent.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "ndebugoverlay.h"
 #include "soundent.h"
 #include "soundenvelope.h"
@@ -34,7 +34,6 @@
 #include "sprite.h"
 #include "particle_parse.h"
 #include "particle_system.h"
-#include "ai_route.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -710,6 +709,8 @@ void CNPC_AntlionGuard::Precache( void )
 	PrecacheParticleSystem( "blood_antlionguard_injured_light" );
 	PrecacheParticleSystem( "blood_antlionguard_injured_heavy" );
 
+	PrecacheEffect( "HunterDamage" );
+
 	BaseClass::Precache();
 }
 
@@ -799,6 +800,9 @@ void CNPC_AntlionGuard::Spawn( void )
 
 	m_iHealth = sk_antlionguard_health.GetFloat();
 	m_iMaxHealth = m_iHealth;
+	m_flFrozenMax = 0.6f;
+	m_flFrozenMoveBlock = 0.1f;
+
 	m_flFieldOfView	= ANTLIONGUARD_FOV_NORMAL;
 	
 	m_flPhysicsCheckTime = 0;
@@ -1114,7 +1118,7 @@ bool CNPC_AntlionGuard::ShouldCharge( const Vector &startPos, const Vector &endP
 
 	// See if we can directly move there
 	AIMoveTrace_t moveTrace;
-	GetMoveProbe()->MoveLimit( NAV_GROUND, startPos, vecTargetPos, MASK_NPCSOLID_BRUSHONLY, GetEnemy(), &moveTrace );
+	GetMoveProbe()->MoveLimit( NAV_GROUND, startPos, vecTargetPos, GetAITraceMask_BrushOnly(), GetEnemy(), &moveTrace );
 	
 	// Draw the probe
 	if ( g_debug_antlionguard.GetInt() == 1 )
@@ -1692,7 +1696,7 @@ void CNPC_AntlionGuard::GetPhysicsShoveDir( CBaseEntity *pObject, float flMass, 
 //-----------------------------------------------------------------------------
 void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 {
-	if ( pEvent->Event() == AE_ANTLIONGUARD_CHARGE_EARLYOUT)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_CHARGE_EARLYOUT )
 	{
 		// Robin: Removed this because it usually made him look less intelligent, not more.
 		//		  This code left here so we don't get warnings in the console.
@@ -1715,7 +1719,7 @@ void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLIONGUARD_SHOVE_PHYSOBJECT)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_SHOVE_PHYSOBJECT )
 	{
 		if ( m_hPhysicsTarget == NULL )
 		{
@@ -1840,7 +1844,7 @@ void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 	
-	if ( pEvent->Event() == AE_ANTLIONGUARD_CHARGE_HIT)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_CHARGE_HIT )
 	{
 		UTIL_ScreenShake( GetAbsOrigin(), 32.0f, 4.0f, 1.0f, 512, SHAKE_START );
 		EmitSound( "NPC_AntlionGuard.HitHard" );
@@ -1877,14 +1881,14 @@ void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLIONGUARD_SHOVE)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_SHOVE )
 	{
 		EmitSound("NPC_AntlionGuard.StepLight", pEvent->eventtime );
 		Shove();
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLIONGUARD_FOOTSTEP_LIGHT)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_FOOTSTEP_LIGHT )
 	{
 		if ( HasSpawnFlags(SF_ANTLIONGUARD_INSIDE_FOOTSTEPS) )
 		{
@@ -1905,7 +1909,7 @@ void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLIONGUARD_FOOTSTEP_HEAVY)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_FOOTSTEP_HEAVY )
 	{
 		if ( HasSpawnFlags(SF_ANTLIONGUARD_INSIDE_FOOTSTEPS) )
 		{
@@ -1926,7 +1930,7 @@ void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 	
-	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_GROWL)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_GROWL )
 	{
 		StartSounds();
 
@@ -1955,7 +1959,7 @@ void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 	}
 		
 
-	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_BARK)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_BARK )
 	{
 		StartSounds();
 
@@ -1971,7 +1975,7 @@ void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 	
-	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_ROAR)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_ROAR )
 	{
 		StartSounds();
 
@@ -1988,7 +1992,7 @@ void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_PAIN)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_PAIN )
 	{
 		StartSounds();
 
@@ -2002,7 +2006,7 @@ void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_SQUEEZE)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_SQUEEZE )
 	{	
 		StartSounds();
 
@@ -2019,7 +2023,7 @@ void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_SCRATCH)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_SCRATCH )
 	{	
 		StartSounds();
 
@@ -2036,7 +2040,7 @@ void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 		
-	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_GRUNT)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_VOICE_GRUNT )
 	{	
 		StartSounds();
 
@@ -2050,7 +2054,7 @@ void CNPC_AntlionGuard::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ANTLIONGUARD_BURROW_OUT)
+	if ( pEvent->Event() == AE_ANTLIONGUARD_BURROW_OUT )
 	{
 		EmitSound( "NPC_Antlion.BurrowOut" );
 
@@ -2509,11 +2513,8 @@ void CNPC_AntlionGuard::StartTask( const Task_t *pTask )
 	case TASK_ANTLIONGUARD_GET_CHASE_PATH_ENEMY_TOLERANCE:
 		{
 			// Chase the enemy, but allow local navigation to succeed if it gets within the goal tolerance
-			int flags = GetNavigator()->GetPath()->GoalFlags();
-			flags |= bits_BUILD_GET_CLOSE;
-			GetNavigator()->GetPath()->SetGoalFlags( flags );
-
-			if ( GetNavigator()->SetGoal( GOALTYPE_ENEMY ) )
+			AI_NavGoal_t goal( GOALTYPE_ENEMY, AIN_DEF_ACTIVITY, AIN_DEF_TOLERANCE, AIN_LOCAL_SUCCEEED_ON_WITHIN_TOLERANCE );
+			if ( GetNavigator()->SetGoal( goal ) )
 			{
 				TaskComplete();
 			}
@@ -2522,9 +2523,6 @@ void CNPC_AntlionGuard::StartTask( const Task_t *pTask )
 				RememberUnreachable(GetEnemy());
 				TaskFail(FAIL_NO_ROUTE);
 			}
-			
-			flags &= bits_BUILD_GET_CLOSE;
-			GetNavigator()->GetPath()->SetGoalFlags( flags );
 		}
 		break;
 
@@ -2940,6 +2938,42 @@ void CNPC_AntlionGuard::RunTask( const Task_t *pTask )
 		{
 			Activity eActivity = GetActivity();
 
+			// If it's frozen, crash instantly
+			if ( m_flFrozen > 0.1f )
+			{
+				// Crash
+				EmitSound( "NPC_AntlionGuard.Shove" );
+				UTIL_ScreenShake( GetAbsOrigin(), 16.0f, 4.0f, 1.0f, 400.0f, SHAKE_START );
+				SetIdealActivity( ACT_ANTLIONGUARD_CHARGE_CRASH );
+
+				// Blow up the surrounding ice
+				CBaseEntity *pChild = FirstMoveChild();
+
+				while ( pChild )
+				{
+					CBaseEntity *pThisChild = pChild;
+
+					// Get next child before killing this one
+					pChild = pChild->NextMovePeer();
+
+					if ( FClassnameIs( pThisChild, "ice_sphere" ) )
+					{
+						if ( RandomInt( 1, 4 ) == 1 )
+						{
+							// Only gib every 4th to prevent slowdown
+							pThisChild->TakeDamage( CTakeDamageInfo( this, this, 100, DMG_GENERIC ) );
+						}
+						else
+						{
+							UTIL_Remove( pThisChild );
+						}
+					}
+				}
+
+				// Not frozen anymore!
+				m_flFrozen = 0.0f;
+			}
+
 			// See if we're trying to stop after hitting/missing our target
 			if ( eActivity == ACT_ANTLIONGUARD_CHARGE_STOP || eActivity == ACT_ANTLIONGUARD_CHARGE_CRASH ) 
 			{
@@ -3167,7 +3201,7 @@ void CNPC_AntlionGuard::SummonAntlions( void )
 
 		// Make sure it's clear, and make sure we hit something
 		trace_t	tr;
-		UTIL_TraceHull( vecSpawn, vecSpawn - Vector(0,0,128), NAI_Hull::Mins( HULL_MEDIUM ), NAI_Hull::Maxs( HULL_MEDIUM ), MASK_NPCSOLID, NULL, COLLISION_GROUP_NONE, &tr );
+		UTIL_TraceHull( vecSpawn, vecSpawn - Vector(0,0,128), NAI_Hull::Mins( HULL_MEDIUM ), NAI_Hull::Maxs( HULL_MEDIUM ), GetAITraceMask(), NULL, COLLISION_GROUP_NONE, &tr );
 		if ( tr.startsolid || tr.allsolid || tr.fraction == 1.0 )
 		{
 			if ( g_debug_antlionguard.GetInt() == 2 )
@@ -3190,7 +3224,7 @@ void CNPC_AntlionGuard::SummonAntlions( void )
 
 		// Make sure the guard can see it
 		trace_t	tr_vis;
-		UTIL_TraceLine( WorldSpaceCenter(), tr.endpos, MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr_vis );
+		UTIL_TraceLine( WorldSpaceCenter(), tr.endpos, GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr_vis );
 		if ( tr_vis.fraction != 1.0 )
 		{
 			if ( g_debug_antlionguard.GetInt() == 2 )
@@ -3801,11 +3835,11 @@ inline bool CNPC_AntlionGuard::CanStandAtPoint( const Vector &vecPos, Vector *pO
 
 	// Start high and try to go lower, looking for the ground between here and there
 	// We do this first because it's more likely to succeed in the typical guard arenas (with open terrain)
-	UTIL_TraceHull( vecStart, vecEnd, GetHullMins(), GetHullMaxs(), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+	UTIL_TraceHull( vecStart, vecEnd, GetHullMins(), GetHullMaxs(), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 	if ( tr.startsolid && !tr.allsolid )
 	{
 		// We started in solid but didn't end up there, see if we can stand where we ended up
-		UTIL_TraceHull( tr.endpos, tr.endpos, GetHullMins(), GetHullMaxs(), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+		UTIL_TraceHull( tr.endpos, tr.endpos, GetHullMins(), GetHullMaxs(), GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 		
 		// Must not be in solid
 		bTraceCleared = ( !tr.allsolid && !tr.startsolid );

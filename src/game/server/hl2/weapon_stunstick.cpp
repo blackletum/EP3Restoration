@@ -9,7 +9,7 @@
 #include "npcevent.h"
 #include "npc_metropolice.h"
 #include "weapon_stunstick.h"
-#include "IEffects.h"
+#include "ieffects.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

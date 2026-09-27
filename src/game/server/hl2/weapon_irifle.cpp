@@ -13,14 +13,14 @@
 
 
 #include "cbase.h"
-#include "NPCEvent.h"
+#include "npcevent.h"
 #include "basehlcombatweapon.h"
 #include "basecombatcharacter.h"
 #include "soundent.h"
 #include "player.h"
 #include "ieffects.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "weapon_flaregun.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

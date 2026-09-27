@@ -242,6 +242,41 @@ LINK_ENTITY_TO_CLASS(item_ammo_ar2_large, CItem_LargeBoxLRounds);
 
 
 // ========================================================================
+//	>> CItem_BoxFlechetteRounds
+// ========================================================================
+class CItem_BoxFlechetteRounds : public CItem
+{
+public:
+	DECLARE_CLASS( CItem_BoxFlechetteRounds, CItem );
+
+	void Precache( void )
+	{
+		PrecacheModel ("models/items/flechette_ammo.mdl");
+	}
+	void Spawn( void )
+	{ 
+		Precache( );
+		SetModel( "models/items/flechette_ammo.mdl");
+		BaseClass::Spawn( );
+	}
+
+	bool MyTouch( CBasePlayer *pPlayer )
+	{
+		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_FLECHETTE, "FlechetteProjectile" ))
+		{
+			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
+			{
+				UTIL_Remove(this);	
+			}	
+			return true;
+		}
+		return false;
+	}
+};
+LINK_ENTITY_TO_CLASS(item_ammo_flechette, CItem_BoxFlechetteRounds);
+
+
+// ========================================================================
 //	>> CItem_Box357Rounds
 // ========================================================================
 class CItem_Box357Rounds : public CItem
@@ -588,6 +623,39 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( item_ammo_ar2_altfire, CItem_AR2AltFireRound );
+
+// ========================================================================
+// Uranium Ammo
+// ========================================================================
+class CItem_Uranium_Ammo : public CItem
+{
+public:
+	DECLARE_CLASS( CItem_Uranium_Ammo, CItem );
+
+	void Spawn( void )
+	{ 
+		Precache( );
+		SetModel( "models/items/battery.mdl");
+		BaseClass::Spawn( );
+	}
+	void Precache( void )
+	{
+		PrecacheModel ("models/items/battery.mdl");
+	}
+	bool MyTouch( CBasePlayer *pPlayer )
+	{
+		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_URANIUM, "Uranium"))
+		{
+			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
+			{
+				UTIL_Remove(this);	
+			}	
+			return true;
+		}
+		return false;
+	}
+};
+LINK_ENTITY_TO_CLASS( item_ammo_uranium, CItem_Uranium_Ammo );
 
 // ==================================================================
 // Ammo crate which will supply infinite ammo of the specified type
@@ -982,33 +1050,3 @@ void CItem_AmmoCrate::InputKill( inputdata_t &data )
 	UTIL_Remove( this );
 }
 
-class CItem_Uranium_Ammo : public CItem
-{
-public:
-	DECLARE_CLASS(CItem_Uranium_Ammo, CItem);
-
-	void Spawn(void)
-	{
-		Precache();
-		SetModel("models/items/battery.mdl");
-		BaseClass::Spawn();
-	}
-	void Precache(void)
-	{
-		PrecacheModel("models/items/battery.mdl");
-	}
-	bool MyTouch(CBasePlayer* pPlayer)
-	{
-		if (pPlayer->GiveAmmo(30, "Uranium"))
-		{
-			if (g_pGameRules->ItemShouldRespawn(this) == GR_ITEM_RESPAWN_NO)
-			{
-				UTIL_Remove(this);
-			}
-			return true;
-		}
-		return false;
-	}
-};
-
-LINK_ENTITY_TO_CLASS(item_ammo_uranium, CItem_Uranium_Ammo);

@@ -38,7 +38,7 @@ public:
 
 	void	FireNPCPrimaryAttack( CBaseCombatCharacter *pOperator, bool bUseWeaponAngles );
 	void	FireNPCSecondaryAttack( CBaseCombatCharacter *pOperator, bool bUseWeaponAngles );
-	void	Operator_ForceNPCFire( CBaseCombatCharacter  *pOperator, bool bSecondary);
+	void	Operator_ForceNPCFire( CBaseCombatCharacter  *pOperator, bool bSecondary );
 	void	Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
 
 	int		GetMinBurst( void ) { return 2; }

@@ -75,6 +75,14 @@ void CBaseHLCombatWeapon::ItemHolsterFrame( void )
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+bool CBaseHLCombatWeapon::IsSpecialSuitAbility( void )
+{
+	return false;
+}
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 bool CBaseHLCombatWeapon::CanLower()
 {
 	if ( SelectWeightedSequence( ACT_VM_IDLE_LOWERED ) == ACTIVITY_NOT_AVAILABLE )
@@ -117,21 +125,22 @@ bool CBaseHLCombatWeapon::Ready( void )
 //-----------------------------------------------------------------------------
 bool CBaseHLCombatWeapon::Deploy( void )
 {
-	// If we should be lowered, deploy in the lowered position
-	// We have to ask the player if the last time it checked, the weapon was lowered
 	if ( GetOwner() && GetOwner()->IsPlayer() )
 	{
 		CHL2_Player *pPlayer = assert_cast<CHL2_Player*>( GetOwner() );
+
+		if ( IsSpecialSuitAbility() )
+		{
+#ifndef CLIENT_DLL
+			pPlayer->SetActiveSpecialSuitAbility( this );
+#endif
+			return false;
+		}
+
+		// If we should be lowered, deploy in the lowered position
+		// We have to ask the player if the last time it checked, the weapon was lowered
 		if ( pPlayer->IsWeaponLowered() )
 		{
-			pPlayer = assert_cast<CHL2_Player*>(GetOwner());//Do this twice because thats what the decompile says
-			if (IsSpecialSuitAbility()) 
-			{
-#if !defined( CLIENT_DLL )
-				pPlayer->SetActiveSpecialSuitAbility(this);
-#endif
-				return false;
-			}
 			if ( SelectWeightedSequence( ACT_VM_IDLE_LOWERED ) != ACTIVITY_NOT_AVAILABLE )
 			{
 				if ( DefaultDeploy( (char*)GetViewModel(), (char*)GetWorldModel(), ACT_VM_IDLE_LOWERED, (char*)GetAnimPrefix() ) )
@@ -158,16 +167,24 @@ bool CBaseHLCombatWeapon::Deploy( void )
 //-----------------------------------------------------------------------------
 bool CBaseHLCombatWeapon::Holster( CBaseCombatWeapon *pSwitchingTo )
 {
-
-	CBaseHLCombatWeapon * piVar3 = dynamic_cast<CBaseHLCombatWeapon *>(pSwitchingTo);
-	if (piVar3) {
-		CBaseCombatCharacter * pCVar4 = GetOwner();
-		if(pCVar4 && pCVar4->IsPlayer() && piVar3->IsSpecialSuitAbility())
+	// Check if the next weapon is a special suit ability
+	CBaseHLCombatWeapon *pHLSwitchingTo = dynamic_cast<CBaseHLCombatWeapon *>( pSwitchingTo );
+	if ( pHLSwitchingTo )
+	{
+		CBaseCombatCharacter *pOwner = GetOwner();
+		if ( pOwner && pOwner->IsPlayer() )
 		{
-#if !defined( CLIENT_DLL )
-			((CHL2_Player *)pCVar4)->SetActiveSpecialSuitAbility(piVar3);
-#endif
-			return false;
+			if ( pHLSwitchingTo->IsSpecialSuitAbility() )
+			{
+				#ifndef CLIENT_DLL
+					// Set the selected weapon as the active special ability
+					CHL2_Player *pPlayer = assert_cast<CHL2_Player*>( pOwner );
+					pPlayer->SetActiveSpecialSuitAbility( pHLSwitchingTo );
+				#endif
+
+				// Don't holster the current weapon!
+				return false;
+			}
 		}
 	}
 
@@ -217,7 +234,7 @@ void CBaseHLCombatWeapon::WeaponIdle( void )
 
 		if( pPlayer )
 		{
-			pPlayer->Weapon_Lower();//1980
+			pPlayer->Weapon_Lower();
 		}
 #endif
 
@@ -246,26 +263,21 @@ void CBaseHLCombatWeapon::WeaponIdle( void )
 		}
 	}
 }
-bool CBaseHLCombatWeapon::SendWeaponAnim(int iActivity)
+
+bool CBaseHLCombatWeapon::SendWeaponAnim( int iActivity )
 {
-	if (IsSpecialSuitAbility()) 
+	if ( IsSpecialSuitAbility() )
 	{
 		return false;
 	}
 
-	return BaseClass::SendWeaponAnim(iActivity);
+	return BaseClass::SendWeaponAnim( iActivity );
 }
-
-bool CBaseHLCombatWeapon::IsSpecialSuitAbility()
-{
-	return false;
-}
-
 
 float	g_lateralBob;
 float	g_verticalBob;
 
-#if defined( CLIENT_DLL ) && ( !defined( HL2MP ) && !defined( PORTAL ) )
+#if defined( CLIENT_DLL ) && (!defined(PORTAL) || defined(PORTAL2)) //leave it out of regular portal, bring it back for portal2 (which also defines PORTAL)
 
 #define	HL2_BOB_CYCLE_MIN	1.0f
 #define	HL2_BOB_CYCLE_MAX	0.45f

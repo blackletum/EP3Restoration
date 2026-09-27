@@ -19,10 +19,10 @@
 #include "entitylist.h"
 #include "ai_task.h"
 #include "activitylist.h"
-#include "engine/IEngineSound.h"
-#include "npc_BaseZombie.h"
+#include "engine/ienginesound.h"
+#include "npc_basezombie.h"
 #include "movevars_shared.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "props.h"
 #include "physics_npc_solver.h"
 #include "physics_prop_ragdoll.h"
@@ -231,7 +231,11 @@ public:
 	int RangeAttack1Conditions( float flDot, float flDist );
 	int MeleeAttack1Conditions( float flDot, float flDist );
 
+#ifdef APERTURE
+	virtual float GetClawAttackRange() { return 50; }
+#else
 	virtual float GetClawAttackRange() const { return 50; }
+#endif // APERTURE
 
 	bool ShouldPlayFootstepMoan( void ) { return false; }
 
@@ -1030,7 +1034,7 @@ int CFastZombie::RangeAttack1Conditions( float flDot, float flDist )
 	// only check half the distance. (the first part of the jump)
 	vecDirToEnemy = vecDirToEnemy * 0.5;
 
-	AI_TraceHull( WorldSpaceCenter(), WorldSpaceCenter() + vecDirToEnemy, vecHullMin, vecHullMax, MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
+	AI_TraceHull( WorldSpaceCenter(), WorldSpaceCenter() + vecDirToEnemy, vecHullMin, vecHullMax, GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr );
 
 	if( tr.fraction != 1.0 )
 	{
@@ -1048,7 +1052,7 @@ int CFastZombie::RangeAttack1Conditions( float flDot, float flDist )
 //-----------------------------------------------------------------------------
 void CFastZombie::HandleAnimEvent( animevent_t *pEvent )
 {
-	if ( pEvent->Event() == AE_FASTZOMBIE_CLIMB_LEFT || pEvent->Event() == AE_FASTZOMBIE_CLIMB_RIGHT)
+	if ( pEvent->Event() == AE_FASTZOMBIE_CLIMB_LEFT || pEvent->Event() == AE_FASTZOMBIE_CLIMB_RIGHT )
 	{
 		if( ++m_iClimbCount % 3 == 0 )
 		{
@@ -1059,25 +1063,25 @@ void CFastZombie::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_FASTZOMBIE_LEAP)
+	if ( pEvent->Event() == AE_FASTZOMBIE_LEAP )
 	{
 		LeapAttack();
 		return;
 	}
 	
-	if ( pEvent->Event() == AE_FASTZOMBIE_GALLOP_LEFT)
+	if ( pEvent->Event() == AE_FASTZOMBIE_GALLOP_LEFT )
 	{
 		EmitSound( "NPC_FastZombie.GallopLeft" );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_FASTZOMBIE_GALLOP_RIGHT)
+	if ( pEvent->Event() == AE_FASTZOMBIE_GALLOP_RIGHT )
 	{
 		EmitSound( "NPC_FastZombie.GallopRight" );
 		return;
 	}
 	
-	if ( pEvent->Event() == AE_ZOMBIE_ATTACK_RIGHT)
+	if ( pEvent->Event() == AE_ZOMBIE_ATTACK_RIGHT )
 	{
 		Vector right;
 		AngleVectors( GetLocalAngles(), NULL, &right, NULL );
@@ -1087,7 +1091,7 @@ void CFastZombie::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_ATTACK_LEFT)
+	if ( pEvent->Event() == AE_ZOMBIE_ATTACK_LEFT )
 	{
 		Vector right;
 		AngleVectors( GetLocalAngles(), NULL, &right, NULL );
@@ -1100,14 +1104,14 @@ void CFastZombie::HandleAnimEvent( animevent_t *pEvent )
 #ifdef HL2_EPISODIC
 
 	// Do the leap attack
-	if ( pEvent->Event() == AE_FASTZOMBIE_VEHICLE_LEAP)
+	if ( pEvent->Event() == AE_FASTZOMBIE_VEHICLE_LEAP )
 	{
 		VehicleLeapAttack();
 		return;
 	}
 
 	// Die while doing an SS in a vehicle
-	if ( pEvent->Event() == AE_FASTZOMBIE_VEHICLE_SS_DIE)
+	if ( pEvent->Event() == AE_FASTZOMBIE_VEHICLE_SS_DIE )
 	{
 		if ( IsInAVehicle() )
 		{
@@ -1493,15 +1497,7 @@ void CFastZombie::ClimbTouch( CBaseEntity *pOther )
 		Vector vecDir = pOther->WorldSpaceCenter() - WorldSpaceCenter();
 		vecDir.z = 0.0; // planar
 		VectorNormalize( vecDir );
-
-		if( IsXbox() )
-		{
-			vecDir *= 400.0f;
-		}
-		else
-		{
-			vecDir *= 200.0f;
-		}
+		vecDir *= 200.0f;
 
 		pOther->VelocityPunch( vecDir );
 

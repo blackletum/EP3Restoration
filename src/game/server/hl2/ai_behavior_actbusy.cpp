@@ -11,11 +11,11 @@
 #include "ai_navigator.h"
 #include "ai_hint.h"
 #include "ai_behavior_follow.h"
-#include "KeyValues.h"
+#include "keyvalues.h"
 #include "filesystem.h"
 #include "eventqueue.h"
 #include "ai_playerally.h"
-#include "SoundEmitterSystem/isoundemittersystembase.h"
+#include "soundemittersystem/isoundemittersystembase.h"
 #include "entityblocker.h"
 #include "npcevent.h"
 
@@ -68,8 +68,6 @@ BEGIN_DATADESC( CAI_ActBusyBehavior )
 	DEFINE_FIELD( m_flDeferUntil, FIELD_TIME ),
 	DEFINE_FIELD( m_iNumEnemiesInSafeZone, FIELD_INTEGER ),
 END_DATADESC();
-
-LINK_BEHAVIOR_TO_CLASSNAME( CAI_ActBusyBehavior );
 
 enum
 {
@@ -954,14 +952,12 @@ Activity CAI_ActBusyBehavior::NPC_TranslateActivity( Activity nActivity )
 //-----------------------------------------------------------------------------
 void CAI_ActBusyBehavior::HandleAnimEvent( animevent_t *pEvent )
 {
-	int nEvent = pEvent->Event();
-
-	if( nEvent == AE_ACTBUSY_WEAPON_FIRE_ON )
+	if( pEvent->Event() == AE_ACTBUSY_WEAPON_FIRE_ON)
 	{
 		m_bAutoFireWeapon = true;
 		return;
 	}
-	else if( nEvent == AE_ACTBUSY_WEAPON_FIRE_OFF )
+	else if( pEvent->Event() == AE_ACTBUSY_WEAPON_FIRE_OFF)
 	{
 		m_bAutoFireWeapon = false;
 		return;

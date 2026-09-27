@@ -11,8 +11,8 @@
 #endif
 
 #include "ai_basenpc_physicsflyer.h"
-#include "Sprite.h"
-#include "SpriteTrail.h"
+#include "sprite.h"
+#include "spritetrail.h"
 #include "player_pickup.h"
 
 // Start with the engine off and folded up.
@@ -112,6 +112,10 @@ public:
 	void			Spawn(void);
 	void			Activate();
 	void			StartTask( const Task_t *pTask );
+
+	virtual bool	IsFrozen( void ) { return m_flFrozen >= 0.5f; }
+	virtual void	Freeze( float flFreezeAmount = -1.0f, CBaseEntity *pFreezer = NULL, Ray_t *pFreezeRay = NULL );
+	virtual void	Unfreeze();
 
 	void			BladesInit();
 	void			SoundInit( void );

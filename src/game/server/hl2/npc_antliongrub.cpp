@@ -6,8 +6,8 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "Gib.h"
-#include "Sprite.h"
+#include "gib.h"
+#include "sprite.h"
 #include "te_effect_dispatch.h"
 #include "npc_antliongrub.h"
 #include "ai_utils.h"
@@ -433,7 +433,7 @@ inline bool CAntlionGrub::ProbeSurface( const Vector &vecTestPos, const Vector &
 {
 	// Trace down to find a surface
 	trace_t tr;
-	UTIL_TraceLine( vecTestPos, vecTestPos + (vecDir*256.0f), MASK_NPCSOLID&(~CONTENTS_MONSTER), this, COLLISION_GROUP_NONE, &tr );
+	UTIL_TraceLine( vecTestPos, vecTestPos + (vecDir*256.0f), MASK_NPCSOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr );
 
 	if ( vecResult )
 	{

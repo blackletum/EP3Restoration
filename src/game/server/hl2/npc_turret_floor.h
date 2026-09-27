@@ -79,7 +79,11 @@ public:
 	virtual QAngle	PreferredCarryAngles( void );
 	virtual bool	OnAttemptPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunPickup_t reason );
 
+#ifdef TERROR
+	const char *GetTracerType( void ) { return NULL; }
+#else
 	const char *GetTracerType( void ) { return "AR2Tracer"; }
+#endif
 
 	bool	ShouldSavePhysics() { return true; }
 
@@ -111,7 +115,7 @@ public:
 
 	int ObjectCaps() 
 	{ 
-		return BaseClass::ObjectCaps() | FCAP_IMPULSE_USE;
+		return BaseClass::ObjectCaps() | FCAP_IMPULSE_USE | FCAP_USE_IN_RADIUS;
 	}
 
 	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
@@ -202,6 +206,10 @@ protected:
 	matrix3x4_t m_muzzleToWorld;
 	int		m_muzzleToWorldTick;
 	int		m_iAmmoType;
+#ifdef TERROR
+	int		m_iAmmo;
+	bool	m_bHasBeenCarried;
+#endif
 
 	bool	m_bAutoStart;
 	bool	m_bActive;		//Denotes the turret is deployed and looking for targets

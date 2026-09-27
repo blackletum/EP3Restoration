@@ -227,7 +227,6 @@ protected:
 	void			InputDisableRotorWash( inputdata_t &inputdata );
 	void			InputMoveTopSpeed( inputdata_t &inputdata );	// Causes the helicopter to immediately accelerate to its desired velocity
 	void			InputMoveSpecifiedSpeed( inputdata_t &inputdata );
-	void			InputSetMaxSpeed( inputdata_t &inputdata );
 	void			InputSetAngles( inputdata_t &inputdata );	// Sets the angles of the helicopter
 
 	void			MoveTopSpeed( float flInstantSpeed );

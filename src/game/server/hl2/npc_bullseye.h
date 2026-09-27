@@ -62,7 +62,9 @@ protected:
 	float			m_fAutoaimRadius;	// How much to influence player's autoaim.
 	float			m_flMinDistValidEnemy;
 
-
+#ifdef PORTAL2
+	int				m_nTargetObjectSize;	// Size an object must be to care about this bullseye
+#endif // PORTAL2
 
 	DECLARE_DATADESC();
 };

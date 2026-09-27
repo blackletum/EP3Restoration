@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright (c) 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: The downtrodden citizens of City 17.
 //
@@ -11,17 +11,13 @@
 #include "ammodef.h"
 #include "globalstate.h"
 #include "soundent.h"
-#include "BasePropDoor.h"
+#include "basepropdoor.h"
 #include "weapon_rpg.h"
 #include "hl2_player.h"
 #include "items.h"
 
 
-#ifdef HL2MP
-#include "hl2mp/weapon_crowbar.h"
-#else
 #include "weapon_crowbar.h"
-#endif
 
 #include "eventqueue.h"
 
@@ -32,7 +28,7 @@
 #include "ai_interactions.h"
 #include "ai_looktarget.h"
 #include "sceneentity.h"
-#include "tier0/ICommandLine.h"
+#include "tier0/icommandline.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -456,11 +452,6 @@ void CNPC_Citizen::PrecacheAllOfType( CitizenType_t type )
 void CNPC_Citizen::Spawn()
 {
 	BaseClass::Spawn();
-
-#ifdef _XBOX
-	// Always fade the corpse
-	AddSpawnFlags( SF_NPC_FADE_CORPSE );
-#endif // _XBOX
 
 	if ( ShouldAutosquad() )
 	{
@@ -1859,7 +1850,7 @@ Activity CNPC_Citizen::NPC_TranslateActivity( Activity activity )
 //------------------------------------------------------------------------------
 void CNPC_Citizen::HandleAnimEvent( animevent_t *pEvent )
 {
-	if ( pEvent->Event() == AE_CITIZEN_GET_PACKAGE)
+	if ( pEvent->Event() == AE_CITIZEN_GET_PACKAGE )
 	{
 		// Give the citizen a package
 		CBaseCombatWeapon *pWeapon = Weapon_Create( "weapon_citizenpackage" );
@@ -1868,13 +1859,13 @@ void CNPC_Citizen::HandleAnimEvent( animevent_t *pEvent )
 			// If I have a name, make my weapon match it with "_weapon" appended
 			if ( GetEntityName() != NULL_STRING )
 			{
-				pWeapon->SetName( AllocPooledString(UTIL_VarArgs("%s_weapon", GetEntityName())) );
+				pWeapon->SetName( AllocPooledString(UTIL_VarArgs("%s_weapon", STRING(GetEntityName()) )) );
 			}
 			Weapon_Equip( pWeapon );
 		}
 		return;
 	}
-	else if ( pEvent->Event() == AE_CITIZEN_HEAL)
+	else if ( pEvent->Event() == AE_CITIZEN_HEAL )
 	{
 		// Heal my target (if within range)
 #if HL2_EPISODIC
@@ -2902,7 +2893,7 @@ void CNPC_Citizen::UpdatePlayerSquad()
 				if ( bShouldAdd )
 				{
 					// @TODO (toml 05-25-04): probably everyone in a squad should be a candidate if one of them sees the player
-					AI_Waypoint_t *pPathToPlayer = pCitizen->GetPathfinder()->BuildRoute( pCitizen->GetAbsOrigin(), vPlayerPos, pPlayer, 5*12, NAV_NONE, true );
+					AI_Waypoint_t *pPathToPlayer = pCitizen->GetPathfinder()->BuildRoute( pCitizen->GetAbsOrigin(), vPlayerPos, pPlayer, 5*12, NAV_NONE, bits_BUILD_GET_CLOSE );
 					GetPathfinder()->UnlockRouteNodes( pPathToPlayer );
 
 					if ( !pPathToPlayer )
@@ -3489,7 +3480,7 @@ bool CNPC_Citizen::ShouldHealTarget( CBaseEntity *pTarget, bool bActiveUse )
 			else
 			{
 				// Does the player need the ammo we can give him?
-				int iMax = GetAmmoDef()->MaxCarry(iAmmoType, (CBasePlayer*)pTarget);
+				int iMax = GetAmmoDef()->MaxCarry(iAmmoType,this);
 				int iCount = ((CBasePlayer*)pTarget)->GetAmmoCount(iAmmoType);
 				if ( !iCount || ((iMax - iCount) >= m_iAmmoAmount) )
 				{
@@ -3621,7 +3612,8 @@ void CNPC_Citizen::Heal()
 		{
 			if ( pTarget->IsPlayer() && npc_citizen_medic_emit_sound.GetBool() )
 			{
-				EmitSound( CPASAttenuationFilter( pTarget, "HealthKit.Touch" ), pTarget->entindex(), "HealthKit.Touch" );
+				CPASAttenuationFilter filter( pTarget, "HealthKit.Touch" );
+				EmitSound( filter, pTarget->entindex(), "HealthKit.Touch" );
 			}
 
 			pTarget->TakeHealth( healAmt, DMG_GENERIC );

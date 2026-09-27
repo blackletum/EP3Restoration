@@ -14,7 +14,7 @@
 #include "smoke_trail.h"
 #include "ar2_explosion.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "world.h"
 
 #ifdef PORTAL
@@ -94,7 +94,7 @@ void CGrenadeAR2::Spawn( void )
 	// -------------
 	// Smoke trail.
 	// -------------
-	if( g_CV_SmokeTrail.GetInt() && !IsXbox() )
+	if( g_CV_SmokeTrail.GetInt() )
 	{
 		m_hSmokeTrail = SmokeTrail::CreateSmokeTrail();
 		

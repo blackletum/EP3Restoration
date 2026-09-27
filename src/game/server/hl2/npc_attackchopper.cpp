@@ -19,8 +19,8 @@
 #include "ammodef.h"
 #include "grenade_homer.h"
 #include "cbasehelicopter.h"
-#include "engine/IEngineSound.h"
-#include "IEffects.h"
+#include "engine/ienginesound.h"
+#include "ieffects.h"
 #include "globals.h"
 #include "explode.h"
 #include "movevars_shared.h"
@@ -28,7 +28,7 @@
 #include "ar2_explosion.h"
 #include "collisionutils.h"
 #include "props.h"
-#include "EntityFlame.h"
+#include "entityflame.h"
 #include "decals.h"
 #include "effect_dispatch_data.h"
 #include "te_effect_dispatch.h"
@@ -1825,6 +1825,14 @@ CBaseEntity *CNPC_AttackHelicopter::GetEnemyVehicle()
 }
 
 
+//theaperturecat
+template<typename T>
+void swap(T& a, T& b) {
+	T temp = a;
+	a = b;
+	b = temp;
+}
+
 //------------------------------------------------------------------------------
 // Purpose :
 //------------------------------------------------------------------------------
@@ -1856,7 +1864,7 @@ void CNPC_AttackHelicopter::ShootAtPlayer( const Vector &vBasePos, const Vector 
 	for ( i = 0; i < nActualTargets; ++i )
 	{
 		int nSwap = random->RandomInt( 0, nActualTargets - 1 ); 
-		V_swap( ppNearbyTargets[i], ppNearbyTargets[nSwap] );
+		swap( ppNearbyTargets[i], ppNearbyTargets[nSwap] );
 	}
 
 	// Just shoot where we're facing
@@ -2133,7 +2141,7 @@ void CNPC_AttackHelicopter::ShootAtVehicle( const Vector &vBasePos, const Vector
 	for ( i = 0; i < nActualTargets; ++i )
 	{
 		int nSwap = random->RandomInt( 0, nActualTargets - 1 ); 
-		V_swap( ppNearbyTargets[i], ppNearbyTargets[nSwap] );
+		swap( ppNearbyTargets[i], ppNearbyTargets[nSwap] );
 	}
 
 	// Just shoot where we're facing

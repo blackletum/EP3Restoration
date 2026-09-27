@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright (c) 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -26,6 +26,7 @@ void RegisterUserMessages( void )
 	usermessages->Register( "ItemPickup", -1 );
 	usermessages->Register( "ShowMenu", -1 );
 	usermessages->Register( "Shake", 13 );
+	usermessages->Register( "Tilt", 22 );
 	usermessages->Register( "Fade", 10 );
 	usermessages->Register( "VGUIMenu", -1 );	// Show VGUI menu
 	usermessages->Register( "Rumble", 3 );	// Send a rumble to a controller
@@ -42,4 +43,12 @@ void RegisterUserMessages( void )
 	usermessages->Register( "LogoTimeMsg", 4 );
 	usermessages->Register( "AchievementEvent", -1 );
 	usermessages->Register( "UpdateJalopyRadar", -1 );
+	usermessages->Register( "CurrentTimescale", 4 );	// Send one float for the new timescale
+	usermessages->Register( "DesiredTimescale", 16 );	// Send timescale and some blending vars
+
+#ifdef HL2_EP3
+	usermessages->Register( "Splatter", 1 );
+	usermessages->Register( "AcidSplash", 8 );
+	usermessages->Register( "SplatterClear", -1 );
+#endif
 }

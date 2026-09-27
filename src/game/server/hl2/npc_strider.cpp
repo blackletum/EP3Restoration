@@ -27,8 +27,8 @@
 #include "te_particlesystem.h"
 #include "shake.h"
 #include "soundent.h"
-#include "IEffects.h"
-#include "engine/IEngineSound.h"
+#include "ieffects.h"
+#include "engine/ienginesound.h"
 #include "bone_setup.h"
 #include "vcollide_parse.h"
 #include "studio.h"
@@ -470,8 +470,15 @@ void CNPC_Strider::Precache()
 	PrecacheMaterial( "effects/strider_muzzle" );
 
 	PrecacheModel( "models/chefhat.mdl" );
+	CRopeKeyframe::PrecacheShakeRopes();
+
+	UTIL_BloodSprayPrecache();
 
 	UTIL_PrecacheOther( "sparktrail" );
+
+	PrecacheEffect( "StriderMuzzleFlash" );
+	PrecacheEffect( "watersplash" );
+	PrecacheEffect( "StriderTracer" );
 
 	BaseClass::Precache();
 }
@@ -505,6 +512,8 @@ void CNPC_Strider::Spawn()
 	
 	m_iHealth = sk_strider_health.GetFloat();
 	m_iMaxHealth = 500;
+
+	m_flFrozenMax = 0.0f;
 
 	m_flFieldOfView = 0.0; // 180 degrees
 
@@ -2788,7 +2797,7 @@ void CNPC_Strider::DoImpactEffect( trace_t &tr, int nDamageType )
 
 		Vector vecReTrace = tr.endpos + vecDir * 12;
 
-		if( UTIL_PointContents( vecReTrace, CONTENTS_EMPTY ) == CONTENTS_EMPTY )
+		if( UTIL_PointContents( vecReTrace, MASK_ALL ) == CONTENTS_EMPTY )
 		{
 			AI_TraceLine( vecReTrace, vecReTrace - vecDir * 24, MASK_SHOT, NULL, COLLISION_GROUP_NONE, &retrace );
 
@@ -3339,7 +3348,6 @@ bool CNPC_Strider::ShouldExplodeFromDamage( const CTakeDamageInfo &info )
 
 //---------------------------------------------------------
 //---------------------------------------------------------
-ConVarRef mat_dxlevel( "mat_dxlevel" );
 bool CNPC_Strider::BecomeRagdoll( const CTakeDamageInfo &info, const Vector &forceVector ) 
 { 
 	// Combine balls make us explode
@@ -3352,10 +3360,9 @@ bool CNPC_Strider::BecomeRagdoll( const CTakeDamageInfo &info, const Vector &for
 		// Otherwise just keel over
 		CRagdollProp *pRagdoll = NULL;
 		CBasePlayer *pPlayer = AI_GetSinglePlayer();
-		if ( pPlayer && mat_dxlevel.GetInt() > 0 )
+		if ( pPlayer )
 		{
-			int dxlevel = mat_dxlevel.GetInt();
-			int maxRagdolls = ( dxlevel >= 90 ) ? 2 : ( dxlevel >= 80 ) ? 1 : 0;
+			int maxRagdolls = 2;
 
 			if ( maxRagdolls > 0 )
 			{

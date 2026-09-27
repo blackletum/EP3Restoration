@@ -18,11 +18,11 @@
 #include "hl2_gamerules.h"
 #include "gamerules.h"
 #include "teamplay_gamerules.h"
-#include "EntityList.h"
+#include "entitylist.h"
 #include "physics.h"
 #include "game.h"
 #include "player_resource.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 
 #include "tier0/vprof.h"
 
@@ -31,10 +31,18 @@
 
 void Host_Say( edict_t *pEdict, bool teamonly );
 
+extern CBaseEntity*	FindPickerEntityClass( CBasePlayer *pPlayer, char *classname );
 extern bool			g_fGameOver;
+
+//theaperturecat
+CBaseEntity* FindPickerEntityClass(CBasePlayer* pPlayer, char* classname)
+{
+	return pPlayer->FindPickerEntityClass(classname);
+}
 
 void ClientFullyConnect(edict_t* pEntity)
 {
+
 }
 
 
@@ -99,7 +107,7 @@ CBaseEntity* FindEntity( edict_t *pEdict, char *classname)
 	// If no name was given set bits based on the picked
 	if (FStrEq(classname,"")) 
 	{
-		return (static_cast<CBasePlayer*>(GetContainingEntity(pEdict))->FindPickerEntityClass(classname));
+		return (FindPickerEntityClass( static_cast<CBasePlayer*>(GetContainingEntity(pEdict)), classname ));
 	}
 	return NULL;
 }
@@ -107,23 +115,26 @@ CBaseEntity* FindEntity( edict_t *pEdict, char *classname)
 //-----------------------------------------------------------------------------
 // Purpose: Precache game-specific models & sounds
 //-----------------------------------------------------------------------------
+PRECACHE_REGISTER_BEGIN( GLOBAL, ClientGamePrecache )
+	PRECACHE( MODEL, "models/player.mdl");
+	PRECACHE( MODEL, "models/gibs/agibs.mdl" );
+	PRECACHE( MODEL, "models/weapons/v_hands.mdl");
+
+	PRECACHE( GAMESOUND, "HUDQuickInfo.LowAmmo" );
+	PRECACHE( GAMESOUND, "HUDQuickInfo.LowHealth" );
+
+	PRECACHE( GAMESOUND, "FX_AntlionImpact.ShellImpact" );
+	PRECACHE( GAMESOUND, "Missile.ShotDown" );
+	PRECACHE( GAMESOUND, "Bullets.DefaultNearmiss" );
+	PRECACHE( GAMESOUND, "Bullets.GunshipNearmiss" );
+	PRECACHE( GAMESOUND, "Bullets.StriderNearmiss" );
+
+	PRECACHE( GAMESOUND, "Geiger.BeepHigh" );
+	PRECACHE( GAMESOUND, "Geiger.BeepLow" );
+PRECACHE_REGISTER_END()
+
 void ClientGamePrecache( void )
 {
-	CBaseEntity::PrecacheModel("models/player.mdl");
-	CBaseEntity::PrecacheModel( "models/gibs/agibs.mdl" );
-	CBaseEntity::PrecacheModel ("models/weapons/v_hands.mdl");
-
-	CBaseEntity::PrecacheScriptSound( "HUDQuickInfo.LowAmmo" );
-	CBaseEntity::PrecacheScriptSound( "HUDQuickInfo.LowHealth" );
-
-	CBaseEntity::PrecacheScriptSound( "FX_AntlionImpact.ShellImpact" );
-	CBaseEntity::PrecacheScriptSound( "Missile.ShotDown" );
-	CBaseEntity::PrecacheScriptSound( "Bullets.DefaultNearmiss" );
-	CBaseEntity::PrecacheScriptSound( "Bullets.GunshipNearmiss" );
-	CBaseEntity::PrecacheScriptSound( "Bullets.StriderNearmiss" );
-	
-	CBaseEntity::PrecacheScriptSound( "Geiger.BeepHigh" );
-	CBaseEntity::PrecacheScriptSound( "Geiger.BeepLow" );
 }
 
 

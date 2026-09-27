@@ -19,12 +19,12 @@
 #include "shake.h"
 #include "ndebugoverlay.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-extern short	g_sModelIndexFireball;
+extern int	g_sModelIndexFireball;
 
 extern ConVar    sk_plr_dmg_molotov;
 extern ConVar    sk_npc_dmg_molotov;
@@ -123,7 +123,7 @@ void CGrenade_Molotov::Detonate( void )
 		SetLocalOrigin( trace.endpos + (trace.plane.normal * (m_flDamage - 24) * 0.6) );
 	}
 
-	int contents = UTIL_PointContents ( GetAbsOrigin() );
+	int contents = UTIL_PointContents ( GetAbsOrigin(), MASK_WATER );
 	
 	if ( (contents & MASK_WATER) )
 	{

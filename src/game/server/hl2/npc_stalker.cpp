@@ -8,7 +8,7 @@
 #include "soundent.h"
 #include "game.h"
 #include "beam_shared.h"
-#include "Sprite.h"
+#include "sprite.h"
 #include "npcevent.h"
 #include "npc_stalker.h"
 #include "ai_hull.h"
@@ -36,7 +36,7 @@
 #include "animation.h"
 #include "scriptedtarget.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "world.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -1000,7 +1000,7 @@ void CNPC_Stalker::DrawAttackBeam(void)
 
 	CalcBeamPosition();
 
-	bool bInWater = (UTIL_PointContents ( tr.endpos, MASK_WATER) & MASK_WATER)?true:false;
+	bool bInWater = (UTIL_PointContents ( tr.endpos, MASK_WATER ) & MASK_WATER)?true:false;
 	// ---------------------------------------------
 	//	Update the beam position
 	// ---------------------------------------------
@@ -1380,8 +1380,8 @@ void CNPC_Stalker::AddZigZagToPath(void)
 
 		// Now make sure that we can still get to the zigzag position and the waypoint
 		AIMoveTrace_t moveTrace1, moveTrace2;
-		GetMoveProbe()->MoveLimit( NAV_GROUND, GetAbsOrigin(), zigZagPos, MASK_NPCSOLID, NULL, &moveTrace1);
-		GetMoveProbe()->MoveLimit( NAV_GROUND, zigZagPos, waypointPos, MASK_NPCSOLID, NULL, &moveTrace2);
+		GetMoveProbe()->MoveLimit( NAV_GROUND, GetAbsOrigin(), zigZagPos, GetAITraceMask(), NULL, &moveTrace1);
+		GetMoveProbe()->MoveLimit( NAV_GROUND, zigZagPos, waypointPos, GetAITraceMask(), NULL, &moveTrace2);
 		if ( !IsMoveBlocked( moveTrace1 ) && !IsMoveBlocked( moveTrace2 ) )
 		{
 			GetNavigator()->PrependWaypoint( zigZagPos, NAV_GROUND, bits_WP_TO_DETOUR );

@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -28,39 +28,15 @@ extern ConVar sensitivity;
 ConVar cl_npc_speedmod_intime("cl_npc_speedmod_intime", "0.25", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_npc_speedmod_outtime("cl_npc_speedmod_outtime", "1.5", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 
-BEGIN_RECV_TABLE_NOBASE(C_BaseHLPlayer, DT_HL2LocalPlayerExclusive)
-RecvPropVectorXY(RECVINFO_NAME(m_vecNetworkOrigin, m_vecOrigin), 0, C_BasePlayer::RecvProxy_LocalOriginXY),
-RecvPropFloat(RECVINFO_NAME(m_vecNetworkOrigin[2], m_vecOrigin[2]), 0, C_BasePlayer::RecvProxy_LocalOriginZ),
-END_RECV_TABLE()
-
 IMPLEMENT_CLIENTCLASS_DT(C_BaseHLPlayer, DT_HL2_Player, CHL2_Player)
 RecvPropDataTable(RECVINFO_DT(m_HL2Local), 0, &REFERENCE_RECV_TABLE(DT_HL2Local)),
-RecvPropDataTable("hl2localdata", 0, 0, &REFERENCE_RECV_TABLE(DT_HL2LocalPlayerExclusive)),
-//RecvPropDataTable("hl2localdata",0, 0, &REFERENCE_RECV_TABLE(DT_HL2LocalData)),
 RecvPropBool(RECVINFO(m_fIsSprinting)),
 END_RECV_TABLE()
-
-
 
 BEGIN_PREDICTION_DATA(C_BaseHLPlayer)
 DEFINE_PRED_TYPEDESCRIPTION(m_HL2Local, C_HL2PlayerLocalData),
 DEFINE_PRED_FIELD(m_fIsSprinting, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA()
-
-//IMPLEMENT_NETWORKCLASS_ALIASED(C_BaseHLPlayer, DT_BaseHLPlayer)
-
-//BEGIN_NETWORK_TABLE(C_BaseHLPlayer, DT_BaseHLPlayer)
-//RecvPropFloat(RECVINFO(m_angEyeAngles[0])),
-//RecvPropFloat(RECVINFO(m_angEyeAngles[1])),
-//RecvPropFloat(RECVINFO(m_angEyeAngles[2])),
-//END_RECV_TABLE()
-
-//BEGIN_RECV_TABLE_NOBASE(CHL2_Player, DT_HL2LocalData)
-// send a hi-res origin to the local player for use in prediction
-//RecvPropVector(SENDINFO(m_vecOrigin), -1, SPROP_NOSCALE | SPROP_CHANGES_OFTEN, 0.0f, HIGH_DEFAULT, RecvProxy_Origin),
-//SendPropFloat(SENDINFO_VECTORELEM(m_angEyeAngles, 0), 8, SPROP_CHANGES_OFTEN, -90.0f, 90.0f),
-//    SendPropAngle( SENDINFO_VECTORELEM(m_angEyeAngles, 1), 10, SPROP_CHANGES_OFTEN ),
-//END_SEND_TABLE()
 
 //-----------------------------------------------------------------------------
 // Purpose: Drops player's primary weapon
@@ -175,7 +151,7 @@ void C_BaseHLPlayer::Zoom(float FOVOffset, float time)
 // Input  : flags - 
 // Output : int
 //-----------------------------------------------------------------------------
-int C_BaseHLPlayer::DrawModel(int flags, const RenderableInstance_t& instance)
+int C_BaseHLPlayer::DrawModel(int flags,const RenderableInstance_t& re)
 {
 	// Not pitch for player
 	QAngle saveAngles = GetLocalAngles();
@@ -185,7 +161,7 @@ int C_BaseHLPlayer::DrawModel(int flags, const RenderableInstance_t& instance)
 
 	SetLocalAngles(useAngles);
 
-	int iret = BaseClass::DrawModel(flags, instance);
+	int iret = BaseClass::DrawModel(flags,re);
 
 	SetLocalAngles(saveAngles);
 
@@ -242,7 +218,7 @@ bool C_BaseHLPlayer::TestMove(const Vector& pos, float fVertDist, float radius, 
 			{
 				// check if the endpos intersects with the direction the object is travelling.  if it doesn't, this is a good direction to move.
 				if (objDir.IsZero() ||
-					IntersectInfiniteRayWithSphere(objPos, objDir, trOver.endpos, radius, &flHit1, &flHit2) && ((flHit1 >= 0.0f) || (flHit2 >= 0.0f)))
+					(IntersectInfiniteRayWithSphere(objPos, objDir, trOver.endpos, radius, &flHit1, &flHit2) && ((flHit1 >= 0.0f) || (flHit2 >= 0.0f))))
 				{
 					return false;
 				}
@@ -659,4 +635,11 @@ bool C_BaseHLPlayer::CreateMove(float flInputSampleTime, CUserCmd* pCmd)
 	}
 
 	return bResult;
+}
+
+
+bool C_BaseHLPlayer::ShouldRegenerateOriginFromCellBits() const
+{
+	// uses cells for local players too
+	return true;
 }

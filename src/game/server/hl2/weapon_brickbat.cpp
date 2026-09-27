@@ -8,19 +8,19 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "NPCEvent.h"
+#include "npcevent.h"
 #include "basehlcombatweapon.h"
 #include "basecombatcharacter.h"
-#include "AI_BaseNPC.h"
-#include "AI_Memory.h"
+#include "ai_basenpc.h"
+#include "ai_memory.h"
 #include "player.h"
-#include "gamerules.h"		// For g_pGameRules
+#include "gamerules.h"		// for g_pgamerules
 #include "weapon_brickbat.h"
 #include "grenade_brickbat.h"
 #include "ammodef.h"
 #include "in_buttons.h"
 #include "game.h"			
-#include "IEffects.h"
+#include "ieffects.h"
 #include "vstdlib/random.h"
 #include "baseviewmodel.h"
 #include "movevars_shared.h"

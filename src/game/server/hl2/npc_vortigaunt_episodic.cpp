@@ -8,12 +8,12 @@
 #include "beam_shared.h"
 #include "globalstate.h"
 #include "npcevent.h"
-#include "Sprite.h"
-#include "IEffects.h"
+#include "sprite.h"
+#include "ieffects.h"
 #include "te_effect_dispatch.h"
-#include "SoundEmitterSystem/isoundemittersystembase.h"
+#include "soundemittersystem/isoundemittersystembase.h"
 #include "physics_prop_ragdoll.h"
-#include "RagdollBoogie.h"
+#include "ragdollboogie.h"
 #include "ai_squadslot.h"
 #include "npc_antlion.h"
 #include "particle_parse.h"
@@ -149,7 +149,6 @@ BEGIN_DATADESC( CNPC_Vortigaunt )
 	DEFINE_FIELD( m_eHealState,				FIELD_INTEGER ),
 	DEFINE_FIELD( m_flNextHealTokenTime,	FIELD_TIME ),
 	DEFINE_ARRAY( m_hHandEffect,			FIELD_EHANDLE, 2 ),
-	DEFINE_FIELD( m_flNextHealTime,			FIELD_TIME ),
 	DEFINE_FIELD( m_bPlayerRequestedHeal,	FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_flDispelTestTime,		FIELD_TIME ),
 	DEFINE_FIELD( m_flHealHinderedTime,		FIELD_FLOAT ),
@@ -713,35 +712,35 @@ int CNPC_Vortigaunt::RangeAttack2Conditions( float flDot, float flDist )
 void CNPC_Vortigaunt::HandleAnimEvent( animevent_t *pEvent )
 {
 	// Start our heal glows (choreo driven)
-	if ( pEvent->Event() == AE_VORTIGAUNT_START_HEAL_GLOW)
+	if ( pEvent->Event() == AE_VORTIGAUNT_START_HEAL_GLOW )
 	{
 		StartHandGlow( VORTIGAUNT_BEAM_HEAL, atoi( pEvent->options ) );
 		return;
 	}
 	
 	// Stop our heal glows (choreo driven)
-	if ( pEvent->Event() == AE_VORTIGAUNT_STOP_HEAL_GLOW)
+	if ( pEvent->Event() == AE_VORTIGAUNT_STOP_HEAL_GLOW )
 	{
 		EndHandGlow();
 		return;
 	}
 
 	// Start our hurt glows (choreo driven)
-	if ( pEvent->Event() == AE_VORTIGAUNT_START_HURT_GLOW)
+	if ( pEvent->Event() == AE_VORTIGAUNT_START_HURT_GLOW )
 	{
 		StartHandGlow( VORTIGAUNT_BEAM_DISPEL, atoi( pEvent->options ) );
 		return;
 	}
 	
 	// Stop our hurt glows (choreo driven)
-	if ( pEvent->Event() == AE_VORTIGAUNT_STOP_HURT_GLOW)
+	if ( pEvent->Event() == AE_VORTIGAUNT_STOP_HURT_GLOW )
 	{
 		EndHandGlow();
 		return;
 	}
 
 	// Start our dispel effect
-	if ( pEvent->Event() == AE_VORTIGAUNT_START_DISPEL)
+	if ( pEvent->Event() == AE_VORTIGAUNT_START_DISPEL )
 	{
 		StartHandGlow( VORTIGAUNT_BEAM_DISPEL, HAND_LEFT );
 		StartHandGlow( VORTIGAUNT_BEAM_DISPEL, HAND_RIGHT );
@@ -759,27 +758,27 @@ void CNPC_Vortigaunt::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_VORTIGAUNT_ACCEL_DISPEL)
+	if ( pEvent->Event() == AE_VORTIGAUNT_ACCEL_DISPEL )
 	{
 		// TODO: Increase the size?
 		return;
 	}
 	
 	// Kaboom!
-	if ( pEvent->Event() == AE_VORTIGAUNT_DISPEL)
+	if ( pEvent->Event() == AE_VORTIGAUNT_DISPEL )
 	{
 		DispelAntlions( GetAbsOrigin(), 400.0f );
 		return;
 	}
 
 	// Start of our heal loop
-	if ( pEvent->Event() == AE_VORTIGAUNT_HEAL_PAUSE)
+	if ( pEvent->Event() == AE_VORTIGAUNT_HEAL_PAUSE )
 	{
 		StartHealing();
 		return;
 	}
 
-	if ( pEvent->Event() == AE_VORTIGAUNT_ZAP_POWERUP)
+	if ( pEvent->Event() == AE_VORTIGAUNT_ZAP_POWERUP )
 	{
 		if ( m_fGlowChangeTime > gpGlobals->curtime )
 			return;
@@ -831,7 +830,7 @@ void CNPC_Vortigaunt::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_VORTIGAUNT_ZAP_SHOOT)
+	if ( pEvent->Event() == AE_VORTIGAUNT_ZAP_SHOOT )
 	{
 		ClearBeams();
 
@@ -926,13 +925,13 @@ void CNPC_Vortigaunt::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 	
-	if ( pEvent->Event() == AE_VORTIGAUNT_ZAP_DONE)
+	if ( pEvent->Event() == AE_VORTIGAUNT_ZAP_DONE )
 	{
 		ClearBeams();
 		return;
 	}
 
-	if ( pEvent->Event() == AE_VORTIGAUNT_HEAL_STARTGLOW)
+	if ( pEvent->Event() == AE_VORTIGAUNT_HEAL_STARTGLOW )
 	{
 		// Make hands glow
 		StartHandGlow( VORTIGAUNT_BEAM_HEAL, HAND_RIGHT );
@@ -940,7 +939,7 @@ void CNPC_Vortigaunt::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 	
-	if ( pEvent->Event() == AE_VORTIGAUNT_HEAL_STARTSOUND)
+	if ( pEvent->Event() == AE_VORTIGAUNT_HEAL_STARTSOUND )
 	{
 		CPASAttenuationFilter filter( this );
 
@@ -957,13 +956,13 @@ void CNPC_Vortigaunt::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_VORTIGAUNT_SWING_SOUND)
+	if ( pEvent->Event() == AE_VORTIGAUNT_SWING_SOUND )
 	{
 		EmitSound( "NPC_Vortigaunt.Swing" );	
 		return;
 	}
 
-	if ( pEvent->Event() == AE_VORTIGAUNT_SHOOT_SOUNDSTART)
+	if ( pEvent->Event() == AE_VORTIGAUNT_SHOOT_SOUNDSTART )
 	{
 		if ( m_fGlowChangeTime > gpGlobals->curtime )
 			return;
@@ -982,13 +981,13 @@ void CNPC_Vortigaunt::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_NPC_LEFTFOOT)
+	if ( pEvent->Event() == AE_NPC_LEFTFOOT )
 	{
 		EmitSound( "NPC_Vortigaunt.FootstepLeft", pEvent->eventtime );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_NPC_RIGHTFOOT)
+	if ( pEvent->Event() == AE_NPC_RIGHTFOOT )
 	{
 		EmitSound( "NPC_Vortigaunt.FootstepRight", pEvent->eventtime );
 		return;
@@ -1173,6 +1172,9 @@ void CNPC_Vortigaunt::Precache()
 	PrecacheParticleSystem( "vortigaunt_hand_glow" );
 
 	PrecacheMaterial( "sprites/light_glow02_add" );
+
+	PrecacheEffect( "VortDispel" );
+	PrecacheEffect( "AntlionGib" );
 
 	BaseClass::Precache();
 }	

@@ -116,7 +116,6 @@ BEGIN_DATADESC( CBaseHelicopter )
 	DEFINE_INPUTFUNC( FIELD_VOID, "DisableRotorWash", InputDisableRotorWash ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "MoveTopSpeed", InputMoveTopSpeed ),
 	DEFINE_INPUTFUNC( FIELD_FLOAT, "MoveSpecifiedSpeed", InputMoveSpecifiedSpeed ),
-	DEFINE_INPUTFUNC( FIELD_FLOAT, "SetMaxSpeed", InputSetMaxSpeed ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "SetAngles", InputSetAngles ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "EnableRotorSound", InputEnableRotorSound ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "DisableRotorSound", InputDisableRotorSound ),
@@ -664,7 +663,7 @@ void CBaseHelicopter::DoRotorPhysicsPush( const Vector &vecRotorOrigin, float fl
 
 
 //------------------------------------------------------------------------------
-// Returns the max distance to search
+// Updates the enemy
 //------------------------------------------------------------------------------
 float CBaseHelicopter::EnemySearchDistance( ) 
 {
@@ -1468,11 +1467,6 @@ void CBaseHelicopter::InputMoveSpecifiedSpeed( inputdata_t &inputdata )
 
 	vecVelocity *= flSpeed;
 	SetAbsVelocity( vecVelocity );
-}
-
-void CBaseHelicopter::InputSetMaxSpeed( inputdata_t &inputdata )
-{
-	m_flMaxSpeed = inputdata.value.Float();
 }
 
 //------------------------------------------------------------------------------

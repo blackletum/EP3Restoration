@@ -562,7 +562,7 @@ void CNPC_Hydra::MoveBody( )
 		// check direct movement
 		AI_TraceHull(m_body[i].vecPos, m_body[i].vecPos + m_body[i].vecDelta, 
 			Vector( -2, -2, -2 ), Vector( 2, 2, 2 ), 
-			MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr);
+			GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr);
 	
 		Vector direct = tr.endpos;
 		Vector delta = Vector( 0, 0, 0 );
@@ -594,7 +594,7 @@ void CNPC_Hydra::MoveBody( )
 			// try to move the remaining distance anyways
 			AI_TraceHull(direct, direct + slide * (1 - tr.fraction), 
 				Vector( -2, -2, -2 ), Vector( 2, 2, 2 ), 
-				MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr);
+				GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr);
 
 			// NDebugOverlay::Line( m_body[i].vecPos, tr.endpos, 255, 255, 0, true, 1);
 
@@ -607,7 +607,7 @@ void CNPC_Hydra::MoveBody( )
 		// make sure the new segment doesn't intersect the world
 		AI_TraceHull(direct, m_body[i-1].vecPos, 
 			Vector( -2, -2, -2 ), Vector( 2, 2, 2 ), 
-			MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr);
+			GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr);
 
 		if (tr.fraction == 1.0)
 		{
@@ -615,7 +615,7 @@ void CNPC_Hydra::MoveBody( )
 			{
 				AI_TraceHull(direct, m_body[i+1].vecPos, 
 					Vector( -2, -2, -2 ), Vector( 2, 2, 2 ), 
-					MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr);
+					GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr);
 			}
 
 			if (tr.fraction == 1.0)
@@ -955,7 +955,7 @@ bool CNPC_Hydra::ContractBetweenStuckSegments( )
 			}
 		}
 	}
-	if (iShortest == -1)
+	if (iShortest = -1)
 		return false;
 
 	// FIXME: check for tunneling
@@ -1107,7 +1107,7 @@ bool CNPC_Hydra::IsValidConnection( int iNode0, int iNode1 )
 	// check to make sure new connection is valid
 	AI_TraceHull(m_body[iNode0].vecPos, m_body[iNode1].vecPos, 
 		Vector( -2, -2, -2 ), Vector( 2, 2, 2 ), 
-		MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr);
+		GetAITraceMask(), this, COLLISION_GROUP_NONE, &tr);
 
 	if (tr.fraction == 1.0)
 	{
@@ -1700,7 +1700,7 @@ IPhysicsConstraint *CHydraImpale::CreateConstraint( CNPC_Hydra *pHydra, IPhysics
 		m_pConstraint->SetGameData( (void *)this );
 	}
 
-	SetThink( &CHydraImpale::ImpaleThink );
+	SetThink( ImpaleThink );
 	SetNextThink( gpGlobals->curtime );
 	return m_pConstraint;
 }

@@ -15,9 +15,9 @@
 #include	"weapon_rpg.h"
 #include	"gib.h"
 #include	"ndebugoverlay.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "ammodef.h"
 #include "hl2_shareddefs.h"
 

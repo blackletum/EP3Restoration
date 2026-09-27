@@ -10,7 +10,7 @@
 #include "beam_shared.h"
 #include "ndebugoverlay.h"
 #include "decals.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -153,8 +153,8 @@ CGrenadeBeam* CGrenadeBeam::Create( CBaseEntity* pOwner, const Vector &vStart)
 	CGrenadeBeam *pEnergy = (CGrenadeBeam *)CreateEntityByName( "grenade_beam" );
 	pEnergy->Spawn();
 	pEnergy->SetOwnerEntity( pOwner );
-	pEnergy->SetRenderColor( 255, 0, 0);
-	pEnergy->SetRenderAlpha( 0 );
+	pEnergy->SetRenderColor( 255, 0, 0 );
+	pEnergy->SetRenderAlpha(0);
 	pEnergy->m_flBeamWidth		= GRENADEBEAM_DEFAULTWIDTH;
 	UTIL_SetOrigin( pEnergy, vStart );
 
@@ -254,7 +254,7 @@ void CGrenadeBeam::GrenadeBeamTouch( CBaseEntity *pOther )
 	// --------------------------------------
 	//  Smoke or bubbles effect
 	// --------------------------------------
-	if (UTIL_PointContents ( GetAbsOrigin(), MASK_WATER) & MASK_WATER)
+	if (UTIL_PointContents ( GetAbsOrigin(), MASK_WATER ) & MASK_WATER)
 	{
 		UTIL_Bubbles(GetAbsOrigin()-Vector(3,3,3),GetAbsOrigin()+Vector(3,3,3),10);
 	}

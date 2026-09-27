@@ -9,16 +9,20 @@
 #include "npc_turret_floor.h"
 #include "ai_senses.h"
 #include "ai_memory.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "ammodef.h"
+#ifndef TERROR
 #include "hl2/hl2_player.h"
+#endif
 #include "soundenvelope.h"
 #include "physics_saverestore.h"
-#include "IEffects.h"
+#include "ieffects.h"
+#ifndef TERROR
 #include "basehlcombatweapon_shared.h"
+#endif
 #include "phys_controller.h"
 #include "ai_interactions.h"
-#include "Sprite.h"
+#include "sprite.h"
 #include "beam_shared.h"
 #include "props.h"
 #include "particle_parse.h"
@@ -26,6 +30,10 @@
 #ifdef PORTAL
 	#include "prop_portal_shared.h"
 	#include "portal_util_shared.h"
+#endif
+
+#ifdef TERROR
+#include "terrorammodef.h"
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -38,7 +46,12 @@ const char *GetMassEquivalent(float flMass);
 //Debug visualization
 ConVar	g_debug_turret( "g_debug_turret", "0" );
 
+#ifdef TERROR
+ConVar physcannon_tracelength( "physcannon_tracelength", "200" );
+int	g_interactionCombineBash		= 0; // melee bash attack
+#else
 extern ConVar physcannon_tracelength;
+#endif
 
 // Interactions
 int	g_interactionTurretStillStanding	= 0;
@@ -180,6 +193,9 @@ CNPC_FloorTurret::CNPC_FloorTurret( void ) :
 //-----------------------------------------------------------------------------
 Class_T	CNPC_FloorTurret::Classify( void ) 
 {
+#ifdef TERROR
+	return CLASS_TURRET;
+#else
 	if ( m_bEnabled ) 
 	{
 		// Hacked or friendly turrets don't attack players
@@ -190,6 +206,7 @@ Class_T	CNPC_FloorTurret::Classify( void )
 	}
 
 	return CLASS_NONE;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -310,7 +327,13 @@ void CNPC_FloorTurret::Spawn( void )
 	SetPoseParameter( m_poseAim_Yaw, 0 );
 	SetPoseParameter( m_poseAim_Pitch, 0 );
 
+#ifdef TERROR
+	m_iAmmoType = GetAmmoDef()->Index( AMMO_TYPE_TURRET );
+	m_iAmmo = GetAmmoDef()->MaxCarry( m_iAmmoType, this );
+	m_bHasBeenCarried = false;
+#else
 	m_iAmmoType = GetAmmoDef()->Index( "PISTOL" );
+#endif
 
 	m_iMuzzleAttachment = LookupAttachment( "eyes" );
 	m_iEyeAttachment = LookupAttachment( "light" );
@@ -352,6 +375,10 @@ void CNPC_FloorTurret::Spawn( void )
 	CreateVPhysics();
 
 	SetState(NPC_STATE_IDLE);
+
+#ifdef TERROR
+	Activate();
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -489,6 +516,9 @@ void CNPC_FloorTurret::Deploy( void )
 //-----------------------------------------------------------------------------
 void CNPC_FloorTurret::OnPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunPickup_t reason )
 {
+#ifdef TERROR
+	m_bHasBeenCarried = true;
+#endif
 	m_hPhysicsAttacker = pPhysGunUser;
 	m_flLastPhysicsInfluenceTime = gpGlobals->curtime;
 
@@ -540,10 +570,20 @@ void CNPC_FloorTurret::OnPhysGunDrop( CBasePlayer *pPhysGunUser, PhysGunDrop_t R
 	m_OnPhysGunDrop.FireOutput( this, this );
 
 	// If this is a friendly turret, remember that it was just dropped
+#ifdef TERROR
+	m_flPlayerDropTime = gpGlobals->curtime + 5.0;
+	if ( Reason == DROPPED_BY_PLAYER )
+	{
+		SetAbsVelocity( vec3_origin );
+		AngularImpulse angVel( 0, 0, 0 );
+		VPhysicsGetObject()->SetVelocity( &vec3_origin, &angVel );
+	}
+#else
 	if ( IRelationType( pPhysGunUser ) != D_HT )
 	{
 		m_flPlayerDropTime = gpGlobals->curtime + 2.0;
 	}
+#endif
 
 	// Restore our mass to the original value
 	Assert( VPhysicsGetObject() );
@@ -555,9 +595,11 @@ void CNPC_FloorTurret::OnPhysGunDrop( CBasePlayer *pPhysGunUser, PhysGunDrop_t R
 //-----------------------------------------------------------------------------
 bool CNPC_FloorTurret::HasPreferredCarryAnglesForPlayer( CBasePlayer *pPlayer )
 {
+#ifndef TERROR
 	// Don't use preferred angles on enemy turrets
 	if ( IRelationType( pPlayer ) == D_HT )
 		return false;
+#endif
 
 	return m_bUseCarryAngles;
 }
@@ -594,6 +636,12 @@ bool CNPC_FloorTurret::HandleInteraction(int interactionType, void *data, CBaseC
 {
 	if ( interactionType == g_interactionCombineBash )
 	{
+#ifdef TERROR//theaperturecat
+		if ( !m_bHasBeenCarried )
+		{
+			return true;
+		}
+#endif
 		// We've been bashed by a combine soldier. Remember who it was, if we haven't got an active kicker
 		if ( !m_hLastNPCToKickMe )
 		{
@@ -601,10 +649,15 @@ bool CNPC_FloorTurret::HandleInteraction(int interactionType, void *data, CBaseC
 			m_flKnockOverFailedTime = gpGlobals->curtime + 3.0;
 		}
 
+
 		// Get knocked away
 		Vector forward, up;
 		AngleVectors( sourceEnt->GetLocalAngles(), &forward, NULL, &up );
+#ifdef TERROR
+		ApplyAbsVelocityImpulse( forward * 10 + up * 1 );
+#else
 		ApplyAbsVelocityImpulse( forward * 100 + up * 50 );
+#endif
 		CTakeDamageInfo info( sourceEnt, sourceEnt, 30, DMG_CLUB );
 		CalculateMeleeDamageForce( &info, forward, GetAbsOrigin() );
 		TakeDamage( info );
@@ -1050,12 +1103,14 @@ void CNPC_FloorTurret::SearchThink( void )
 	//If we've found a target, spin up the barrel and start to attack
 	if ( GetEnemy() != NULL )
 	{
+#ifndef TERROR
 		//Give players a grace period
 		if ( GetEnemy()->IsPlayer() )
 		{
 			m_flShotTime  = gpGlobals->curtime + 0.5f;
 		}
 		else
+#endif
 		{
 			m_flShotTime  = gpGlobals->curtime + 0.1f;
 		}
@@ -1159,9 +1214,26 @@ void CNPC_FloorTurret::Shoot( const Vector &vecSrc, const Vector &vecDirToEnemy,
 		info.m_iAmmoType = m_iAmmoType;
 	}
 
+#ifdef TERROR
+	if ( m_hPhysicsAttacker.Get() )
+	{
+		info.m_pAttacker = m_hPhysicsAttacker;
+	}
+#endif
+
 	FireBullets( info );
 	EmitSound( "NPC_FloorTurret.ShotSounds", m_ShotSounds );
 	DoMuzzleFlash();
+#ifdef TERROR//theaperturecat
+	if ( m_iAmmo > 0)
+	{
+		--m_iAmmo;
+		if ( m_iAmmo == 0 )
+		{
+			AddSpawnFlags( SF_FLOOR_TURRET_OUT_OF_AMMO );
+		}
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1218,11 +1290,13 @@ bool CNPC_FloorTurret::IsValidEnemy( CBaseEntity *pEnemy )
 bool CNPC_FloorTurret::CanBeAnEnemyOf( CBaseEntity *pEnemy )
 {
 	// If we're out of ammo, make friendly companions ignore us
+#ifdef HL2_DLL
 	if ( m_spawnflags & SF_FLOOR_TURRET_OUT_OF_AMMO )
 	{
 		if ( pEnemy->Classify() == CLASS_PLAYER_ALLY_VITAL )
 			return false;
 	} 
+#endif
 
 	// If we're on the side, we're never anyone's enemy
 	if ( OnSide() )
@@ -1329,7 +1403,9 @@ void CNPC_FloorTurret::TippedThink( void )
 			{
 				m_OnTipped.FireOutput( this, this );
 				SetEyeState( TURRET_EYE_DEAD );
+#ifndef TERROR
 				SetCollisionGroup( COLLISION_GROUP_DEBRIS_TRIGGER );
+#endif
 
 				// Start thinking slowly to see if we're ever set upright somehow
 				SetThink( &CNPC_FloorTurret::InactiveThink );
@@ -1420,6 +1496,11 @@ void CNPC_FloorTurret::HackFindEnemy( void )
 	// We have to refresh our memories before finding enemies, so
 	// dead enemies are cleared out before new ones are added.
 	GetEnemies()->RefreshMemories();
+
+#ifdef TERROR
+	if ( !m_bHasBeenCarried || IsBeingCarriedByPlayer() )
+		return;
+#endif
 
 	GetSenses()->Look( FLOOR_TURRET_RANGE );
 	SetEnemy( BestEnemy() );
@@ -1856,6 +1937,14 @@ int CNPC_FloorTurret::OnTakeDamage( const CTakeDamageInfo &info )
 		newInfo.ScaleDamageForce( 2.5f );
 	}
 
+#ifdef TERROR
+	IPhysicsObject *object = VPhysicsGetObject();
+	if ( object )
+	{
+		object->Wake();
+	}
+#endif
+
 	// Manually apply vphysics because AI_BaseNPC takedamage doesn't call back to CBaseEntity OnTakeDamage
 	VPhysicsTakeDamage( newInfo );
 
@@ -1890,7 +1979,16 @@ QAngle CNPC_FloorTurret::PreferredCarryAngles( void )
 	static QAngle g_prefAngles;
 
 	Vector vecUserForward;
+#ifdef TERROR
+	CBasePlayer *pPlayer = CBasePlayer::PlayerHoldingEntity( this );
+#else
 	CBasePlayer *pPlayer = AI_GetSinglePlayer();
+#endif
+	if ( !pPlayer )
+	{
+		return vec3_angle;
+	}
+
 	pPlayer->EyeVectors( &vecUserForward );
 
 	// If we're looking up, then face directly forward
@@ -1919,6 +2017,7 @@ void CNPC_FloorTurret::SpinDown( void )
 //-----------------------------------------------------------------------------
 float CNPC_FloorTurret::GetAttackDamageScale( CBaseEntity *pVictim )
 {
+#ifdef HL2_DLL
 	CBaseCombatCharacter *pBCC = pVictim->MyCombatCharacterPointer();
 
 	// Do extra damage to antlions & combine
@@ -1930,6 +2029,7 @@ float CNPC_FloorTurret::GetAttackDamageScale( CBaseEntity *pVictim )
 		if ( pBCC->Classify() == CLASS_COMBINE )
 			return 2.0;
 	}
+#endif
 
 	return BaseClass::GetAttackDamageScale( pVictim );
 }
@@ -1939,6 +2039,9 @@ float CNPC_FloorTurret::GetAttackDamageScale( CBaseEntity *pVictim )
 //-----------------------------------------------------------------------------
 Vector CNPC_FloorTurret::GetAttackSpread( CBaseCombatWeapon *pWeapon, CBaseEntity *pTarget ) 
 {
+#ifdef TERROR
+	return VECTOR_CONE_10DEGREES;
+#else
 	WeaponProficiency_t weaponProficiency = WEAPON_PROFICIENCY_AVERAGE;
 
 	// Switch our weapon proficiency based upon our target
@@ -1957,6 +2060,7 @@ Vector CNPC_FloorTurret::GetAttackSpread( CBaseCombatWeapon *pWeapon, CBaseEntit
 	}
 
 	return VECTOR_CONE_10DEGREES * ((CBaseHLCombatWeapon::GetDefaultProficiencyValues())[ weaponProficiency ].spreadscale);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1989,6 +2093,13 @@ int CNPC_FloorTurret::DrawDebugTextOverlays( void )
 			EntityText( text_offset, tempstr, 0);
 			text_offset++;
 		}
+
+#ifdef TERROR
+		char tempstr[512];
+		Q_snprintf(tempstr, sizeof(tempstr),"Ammo: %d", m_iAmmo);
+		EntityText( text_offset, tempstr, 0);
+		text_offset++;
+#endif
 	}
 
 	return text_offset;
@@ -2252,7 +2363,11 @@ IMotionEvent::simresult_e CTurretTipController::Simulate( IPhysicsMotionControll
 	if ( m_pParentTurret->WasJustDroppedByPlayer() )
 	{
 		// Increase the controller strength a little
+#ifdef TERROR
+		flAngularLimit += 60;
+#else
 		flAngularLimit += 20;
+#endif
 	}
 	else
 	{
@@ -2326,5 +2441,8 @@ bool CTurretTipController::Enabled( void )
 AI_BEGIN_CUSTOM_NPC( npc_turret_floor, CNPC_FloorTurret )
 
 	DECLARE_INTERACTION( g_interactionTurretStillStanding );	
+#ifdef TERROR
+	DECLARE_INTERACTION( g_interactionCombineBash );
+#endif
 
 AI_END_CUSTOM_NPC()

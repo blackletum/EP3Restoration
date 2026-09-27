@@ -10,7 +10,7 @@
 #include "gamerules.h"
 #include "grenade_frag.h"
 #include "npcevent.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "items.h"
 #include "in_buttons.h"
 #include "soundent.h"
@@ -389,7 +389,20 @@ void CWeaponFrag::ThrowGrenade( CBasePlayer *pPlayer )
 	Vector	vecEye = pPlayer->EyePosition();
 	Vector	vForward, vRight;
 
-	pPlayer->EyeVectors( &vForward, &vRight, NULL );
+	// TrackIR
+	if ( IsHeadTrackingEnabled() )
+	{
+		vForward = pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+		QAngle angles;
+		VectorAngles(vForward, angles);
+		AngleVectors( angles, NULL, &vRight, NULL );
+	}
+	else
+	{
+		pPlayer->EyeVectors( &vForward, &vRight, NULL );
+	}
+	// TrackIR
+
 	Vector vecSrc = vecEye + vForward * 18.0f + vRight * 8.0f;
 	CheckThrowPosition( pPlayer, vecEye, vecSrc );
 //	vForward[0] += 0.1f;
@@ -417,7 +430,20 @@ void CWeaponFrag::LobGrenade( CBasePlayer *pPlayer )
 	Vector	vecEye = pPlayer->EyePosition();
 	Vector	vForward, vRight;
 
-	pPlayer->EyeVectors( &vForward, &vRight, NULL );
+	// TrackIR
+	if ( IsHeadTrackingEnabled() )
+	{
+		QAngle angles;
+		Vector vAim = pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+		VectorAngles(vAim, angles);
+		AngleVectors( angles, &vForward, &vRight, NULL );
+	}
+	else
+	{
+		pPlayer->EyeVectors( &vForward, &vRight, NULL );
+	}
+	// TrackIR
+
 	Vector vecSrc = vecEye + vForward * 18.0f + vRight * 8.0f + Vector( 0, 0, -8 );
 	CheckThrowPosition( pPlayer, vecEye, vecSrc );
 	

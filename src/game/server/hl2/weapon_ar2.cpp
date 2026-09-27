@@ -7,19 +7,19 @@
 
 #include "cbase.h"
 #include "basecombatweapon.h"
-#include "NPCevent.h"
+#include "npcevent.h"
 #include "basecombatcharacter.h"
-#include "AI_BaseNPC.h"
+#include "ai_basenpc.h"
 #include "player.h"
 #include "weapon_ar2.h"
 #include "grenade_ar2.h"
 #include "gamerules.h"
 #include "game.h"
 #include "in_buttons.h"
-#include "AI_Memory.h"
+#include "ai_memory.h"
 #include "soundent.h"
 #include "hl2_player.h"
-#include "EntityFlame.h"
+#include "entityflame.h"
 #include "weapon_flaregun.h"
 #include "te_effect_dispatch.h"
 #include "prop_combine_ball.h"
@@ -97,7 +97,7 @@ acttable_t	CWeaponAR2::m_acttable[] =
 	{ ACT_RUN_CROUCH_AIM,			ACT_RUN_CROUCH_AIM_RIFLE,		true },
 	{ ACT_GESTURE_RANGE_ATTACK1,	ACT_GESTURE_RANGE_ATTACK_AR2,	false },
 	{ ACT_COVER_LOW,				ACT_COVER_SMG1_LOW,				false },		// FIXME: hook to AR2 unique
-	{ ACT_RANGE_AIM_LOW,			ACT_RANGE_AIM_AR2_LOW,			false },
+	{ ACT_RANGE_AIM_LOW,			ACT_RANGE_AIM_SMG1_LOW,			false },		// FIXME: hook to AR2 unique
 	{ ACT_RANGE_ATTACK1_LOW,		ACT_RANGE_ATTACK_SMG1_LOW,		true },		// FIXME: hook to AR2 unique
 	{ ACT_RELOAD_LOW,				ACT_RELOAD_SMG1_LOW,			false },
 	{ ACT_GESTURE_RELOAD,			ACT_GESTURE_RELOAD_SMG1,		true },
@@ -126,6 +126,7 @@ void CWeaponAR2::Precache( void )
 
 	UTIL_PrecacheOther( "prop_combine_ball" );
 	UTIL_PrecacheOther( "env_entity_dissolver" );
+	PrecacheEffect( "AR2Impact" );
 }
 
 //-----------------------------------------------------------------------------
@@ -423,7 +424,7 @@ void CWeaponAR2::FireNPCSecondaryAttack( CBaseCombatCharacter *pOperator, bool b
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CWeaponAR2::Operator_ForceNPCFire( CBaseCombatCharacter *pOperator, bool bSecondary)
+void CWeaponAR2::Operator_ForceNPCFire( CBaseCombatCharacter *pOperator, bool bSecondary )
 {
 	if ( bSecondary )
 	{
@@ -447,6 +448,7 @@ void CWeaponAR2::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatChara
 {
 	switch( pEvent->Event() )
 	{ 
+		case EVENT_WEAPON_SMG1:
 		case EVENT_WEAPON_AR2:
 			{
 				FireNPCPrimaryAttack( pOperator, false );

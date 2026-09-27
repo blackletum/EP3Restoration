@@ -319,6 +319,7 @@ bool CHLSelectFireMachineGun::Deploy( void )
 	return BaseClass::Deploy();
 }
 
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //

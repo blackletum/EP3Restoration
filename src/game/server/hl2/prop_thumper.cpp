@@ -9,7 +9,7 @@
 #include "npcevent.h"
 #include "rotorwash.h"
 #include "soundenvelope.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "npc_antlion.h"
 #include "te_effect_dispatch.h"
 
@@ -154,6 +154,8 @@ void CPropThumper::Precache( void )
 	PrecacheScriptSound( "coast.thumper_startup" );
 	PrecacheScriptSound( "coast.thumper_shutdown" );
 	PrecacheScriptSound( "coast.thumper_large_hit" );
+
+	PrecacheEffect( "ThumperDust" );
 }
 
 void CPropThumper::InitMotorSound( void )
@@ -178,7 +180,7 @@ void CPropThumper::HandleState( void )
  		 m_flPlaybackRate = MIN( m_flPlaybackRate + STATE_CHANGE_MODIFIER, 1.0f );
 	}
 
-	(CSoundEnvelopeController::GetController()).Play( m_sndMotor, 1.0f, m_flPlaybackRate * 100 );
+	(CSoundEnvelopeController::GetController()).Play( m_sndMotor, 1.0f, GetPlaybackRate() * 100 );
 }
 
 void CPropThumper::Think( void )
@@ -195,6 +197,8 @@ void CPropThumper::Think( void )
 
 void CPropThumper::Thump ( void )
 {
+	float flPlaybackRate = GetPlaybackRate();
+
 	if ( m_iHammerAttachment != -1 )
 	{
 		Vector vOrigin;
@@ -204,13 +208,13 @@ void CPropThumper::Thump ( void )
 
 		data.m_nEntIndex = entindex();
 		data.m_vOrigin = vOrigin;
-		data.m_flScale = m_iDustScale * m_flPlaybackRate;
+		data.m_flScale = m_iDustScale * flPlaybackRate;
 		DispatchEffect( "ThumperDust", data );
-		UTIL_ScreenShake( vOrigin, 10.0 * m_flPlaybackRate, m_flPlaybackRate, m_flPlaybackRate / 2, THUMPER_RADIUS * m_flPlaybackRate, SHAKE_START, false );
+		UTIL_ScreenShake( vOrigin, 10.0 * flPlaybackRate, flPlaybackRate, flPlaybackRate / 2, THUMPER_RADIUS * flPlaybackRate, SHAKE_START, false );
 	}
 
 	EmitSound( "coast.thumper_dust" );
-	CSoundEnt::InsertSound ( SOUND_THUMPER, GetAbsOrigin(), THUMPER_RADIUS * m_flPlaybackRate, THUMPER_SOUND_DURATION, this );
+	CSoundEnt::InsertSound ( SOUND_THUMPER, GetAbsOrigin(), THUMPER_RADIUS * flPlaybackRate, THUMPER_SOUND_DURATION, this );
 
 	if ( thumper_show_radius.GetBool() )
 	{
@@ -218,7 +222,7 @@ void CPropThumper::Thump ( void )
 			255, 64, 64, 255, THUMPER_SOUND_DURATION );
 	}
 
-	if ( m_flPlaybackRate < 0.7f )
+	if ( flPlaybackRate < 0.7f )
 		 return;
 
 	if( m_iDustScale == THUMPER_MIN_SCALE )

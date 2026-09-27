@@ -25,7 +25,7 @@
 #include "collisionutils.h"
 #include "combine_mine.h"
 #include "explode.h"
-#include "npc_BaseZombie.h"
+#include "npc_basezombie.h"
 #include "modelentities.h"
 
 #if HL2_EPISODIC
@@ -113,9 +113,7 @@ CNPC_Barnacle::CNPC_Barnacle(void)
 {
 	m_flRestUnitsAboveGround = 16.0f;
 	m_flNextBloodTime = -1.0f;
-#ifndef _XBOX
 	m_nBloodColor = BLOOD_COLOR_YELLOW;
-#endif
 	m_bPlayerWasStanding = false;
 }
 
@@ -164,9 +162,7 @@ BEGIN_DATADESC( CNPC_Barnacle )
 	DEFINE_FIELD( m_hLastSpitEnemy, FIELD_EHANDLE ),
 	DEFINE_FIELD( m_nShakeCount, FIELD_INTEGER ),
 	DEFINE_FIELD( m_flNextBloodTime, FIELD_TIME ),
-#ifndef _XBOX
 	DEFINE_FIELD( m_nBloodColor, FIELD_INTEGER ),
-#endif
 	DEFINE_FIELD( m_vecBloodPos, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( m_flBarnaclePullSpeed, FIELD_FLOAT ),
 	DEFINE_FIELD( m_flLocalTimer, FIELD_TIME ),
@@ -231,7 +227,7 @@ void CNPC_Barnacle::ComputeWorldSpaceSurroundingBox( Vector *pVecWorldMins, Vect
 //=========================================================
 void CNPC_Barnacle::HandleAnimEvent( animevent_t *pEvent )
 {
-	if ( pEvent->Event() == AE_BARNACLE_PUKEGIB)
+	if ( pEvent->Event()  == AE_BARNACLE_PUKEGIB)
 	{
 		CGib::SpawnSpecificGibs( this, 1, 50, 1, "models/gibs/hgibs_rib.mdl");
 		return;
@@ -1413,10 +1409,10 @@ void CNPC_Barnacle::AttachTongueToTarget( CBaseEntity *pTouchEnt, Vector vecGrab
 
 		CTraceFilterSkipTwoEntities traceFilter( this, pTouchEnt, COLLISION_GROUP_NONE );
 		trace_t placementTrace;
-		UTIL_TraceHull( origin, origin, pTouchEnt->WorldAlignMins(), pTouchEnt->WorldAlignMaxs(), MASK_NPCSOLID, &traceFilter, &placementTrace );
+		UTIL_TraceHull( origin, origin, pTouchEnt->WorldAlignMins(), pTouchEnt->WorldAlignMaxs(), GetAITraceMask(), &traceFilter, &placementTrace );
 		if ( placementTrace.startsolid )
 		{
-			UTIL_TraceHull( origin + Vector(0, 0, 24), origin, pTouchEnt->WorldAlignMins(), pTouchEnt->WorldAlignMaxs(), MASK_NPCSOLID, &traceFilter, &placementTrace );
+			UTIL_TraceHull( origin + Vector(0, 0, 24), origin, pTouchEnt->WorldAlignMins(), pTouchEnt->WorldAlignMaxs(), GetAITraceMask(), &traceFilter, &placementTrace );
 			if ( !placementTrace.startsolid )
 			{
 				pTouchEnt->SetAbsOrigin( placementTrace.endpos );
@@ -1677,10 +1673,7 @@ void CNPC_Barnacle::BitePrey( void )
 	// and hide it.
 	if ( enemyClass == CLASS_ANTLION )
 	{
-		
-#ifndef _XBOX
 		m_nBloodColor = pVictim->BloodColor(); 
-#endif
 		m_flNextBloodTime = 0.0f;
 		SprayBlood();
 
@@ -1736,9 +1729,7 @@ void CNPC_Barnacle::BitePrey( void )
 	m_flNextBloodTime = 0.0f;
 	
 	// NOTE: This was too confusing to people with the more recognizable blood -- jdw
-#ifndef _XBOX
 	m_nBloodColor = pVictim->BloodColor(); 
-#endif
 	CollisionProp()->NormalizedToWorldSpace( Vector( 0.5f, 0.5f, 0.0f ), &m_vecBloodPos );
 
 	// m_hRagdoll->SetOverlaySequence( ACT_DIE_BARNACLE_SWALLOW );
@@ -1763,13 +1754,8 @@ void CNPC_Barnacle::SprayBlood()
 	Vector jitterPos = RandomVector( -8, 8 );
 	jitterPos.z = 0.0f;
 
-#ifndef _XBOX
 	UTIL_BloodSpray( m_vecBloodPos + jitterPos, Vector( 0,0,-1),
 		m_nBloodColor, RandomInt( 4, 8 ), RandomInt(0,2) == 0 ? FX_BLOODSPRAY_ALL : FX_BLOODSPRAY_CLOUD );
-#else
-	UTIL_BloodSpray( m_vecBloodPos + jitterPos, Vector( 0,0,-1),
-		BLOOD_COLOR_YELLOW, RandomInt( 4, 8 ), RandomInt(0,2) == 0 ? FX_BLOODSPRAY_ALL : FX_BLOODSPRAY_CLOUD );
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2060,11 +2046,7 @@ void CNPC_Barnacle::Event_Killed( const CTakeDamageInfo &info )
 	}
 
 	// Puke blood
-#ifdef _XBOX
-	UTIL_BloodSpray( GetAbsOrigin(), Vector(0,0,-1), BLOOD_COLOR_YELLOW, 8, FX_BLOODSPRAY_ALL );
-#else
 	UTIL_BloodSpray( GetAbsOrigin(), Vector(0,0,-1), BLOOD_COLOR_RED, 8, FX_BLOODSPRAY_ALL );
-#endif
 
 	// Put blood on the ground if near enough
 	trace_t bloodTrace;
@@ -2072,11 +2054,7 @@ void CNPC_Barnacle::Event_Killed( const CTakeDamageInfo &info )
 	
 	if ( bloodTrace.fraction < 1.0f )
 	{
-#ifdef _XBOX
-		UTIL_BloodDecalTrace( &bloodTrace, BLOOD_COLOR_YELLOW );
-#else
 		UTIL_BloodDecalTrace( &bloodTrace, BLOOD_COLOR_RED );
-#endif
 	}
 
 	EmitSound( "NPC_Barnacle.Die" );
@@ -2311,6 +2289,8 @@ void CNPC_Barnacle::Precache()
 
 	PrecacheModel( "models/props_junk/rock001a.mdl" );
 
+	UTIL_BloodSprayPrecache();
+
 	BaseClass::Precache();
 }	
 
@@ -2432,7 +2412,7 @@ CBaseEntity *CNPC_Barnacle::TongueTouchEnt ( float *pflLength )
 	int iMask = MASK_SOLID_BRUSHONLY;
 
 #ifdef HL2_EPISODIC
-	iMask = MASK_NPCSOLID;
+	iMask = GetAITraceMask();
 #endif
 
 	// trace once to hit architecture and see if the tongue needs to change position.

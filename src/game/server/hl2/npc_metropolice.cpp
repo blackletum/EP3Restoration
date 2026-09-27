@@ -616,11 +616,6 @@ void CNPC_MetroPolice::Spawn( void )
 {
 	Precache();
 
-#ifdef _XBOX
-	// Always fade the corpse
-	AddSpawnFlags( SF_NPC_FADE_CORPSE );
-#endif // _XBOX
-
 	SetModel( STRING( GetModelName() ) );
 
 	SetHullType(HULL_HUMAN);
@@ -854,23 +849,25 @@ void CNPC_MetroPolice::SpeakSentence( int nSentenceType )
 
 	if ( nSentenceType >= SENTENCE_BASE_BEHAVIOR_INDEX )
 	{
-		if ( GetPrimaryBehavior() == &m_FuncTankBehavior )
+		//theaperturecat todo
+		/*
+		if ( GetRunningBehavior() == &m_FuncTankBehavior )
 		{
 			SpeakFuncTankSentence( nSentenceType );
 			return;
 		}
 
-		if ( GetPrimaryBehavior() == &m_StandoffBehavior )
+		if ( GetRunningBehavior() == &m_StandoffBehavior )
 		{
 			SpeakStandoffSentence( nSentenceType );
 			return;
 		}
 
-		if ( GetPrimaryBehavior() == &m_AssaultBehavior )
+		if ( GetRunningBehavior() == &m_AssaultBehavior )
 		{
 			SpeakAssaultSentence( nSentenceType );
 			return;
-		}
+		}*/
 	}
 
 	switch ( nSentenceType )

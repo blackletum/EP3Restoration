@@ -6,13 +6,13 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "AI_BaseNPC.h"
-#include "AI_Default.h"
-#include "AI_Senses.h"
+#include "ai_basenpc.h"
+#include "ai_default.h"
+#include "ai_senses.h"
 #include "ai_node.h"	  // for hint defintions
 #include "ai_network.h"
-#include "AI_Hint.h"
-#include "AI_Squad.h"
+#include "ai_hint.h"
+#include "ai_squad.h"
 #include "beam_shared.h"
 #include "globalstate.h"
 #include "soundent.h"
@@ -1339,17 +1339,17 @@ void CNPC_Spotlight::SpotlightUpdate(void)
 	// Fade out spotlight end if past max length.  
 	if (m_flSpotlightCurLength > 2*m_flSpotlightMaxLength)
 	{
-		m_pSpotlightTarget->SetRenderColorA( 0 );
+		m_pSpotlightTarget->SetRenderAlpha( 0 );
 		m_pSpotlight->SetFadeLength(m_flSpotlightMaxLength);
 	}
 	else if (m_flSpotlightCurLength > m_flSpotlightMaxLength)		
 	{
-		m_pSpotlightTarget->SetRenderColorA( (1-((m_flSpotlightCurLength-m_flSpotlightMaxLength)/m_flSpotlightMaxLength)) );
+		m_pSpotlightTarget->SetRenderAlpha( (1-((m_flSpotlightCurLength-m_flSpotlightMaxLength)/m_flSpotlightMaxLength)) );
 		m_pSpotlight->SetFadeLength(m_flSpotlightMaxLength);
 	}
 	else
 	{
-		m_pSpotlightTarget->SetRenderColorA( 1.0 );
+		m_pSpotlightTarget->SetRenderAlpha( 1.0 );
 		m_pSpotlight->SetFadeLength(m_flSpotlightCurLength);
 	}
 

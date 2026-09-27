@@ -7,10 +7,10 @@
 
 #include "cbase.h"
 #include "vehicle_base.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "in_buttons.h"
 #include "ammodef.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "beam_shared.h"
 #include "weapon_gauss.h"
 #include "soundenvelope.h"
@@ -119,6 +119,8 @@ END_DATADESC()
 void CPropJetski::Precache( void )
 {
 	BaseClass::Precache();
+	PrecacheEffect( "waterripple" );
+	PrecacheEffect( "watersplash" );
 }
 
 //-----------------------------------------------------------------------------

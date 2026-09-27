@@ -16,7 +16,7 @@
 #include "npc_citizen17.h"
 #include "gib.h"
 #include "spotlightend.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "items.h"
 #include "ai_route.h"
 #include "player_pickup.h"
@@ -485,7 +485,7 @@ Activity CNPC_CScanner::NPC_TranslateActivity( Activity eNewActivity )
 //-----------------------------------------------------------------------------
 void CNPC_CScanner::HandleAnimEvent( animevent_t *pEvent )
 {
-	if( pEvent->Event() == AE_SCANNER_CLOSED)
+	if( pEvent->Event() == AE_SCANNER_CLOSED )
 	{
 		m_bIsOpen = false;
 		SetActivity( ACT_IDLE );
@@ -2346,7 +2346,7 @@ bool CNPC_CScanner::OverrideMove( float flInterval )
 		if ( pMoveTarget || HaveInspectTarget() )
 		{
 			trace_t tr;
-			AI_TraceHull( GetAbsOrigin(), vMoveTargetPos, GetHullMins(), GetHullMaxs(), MASK_NPCSOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr );
+			AI_TraceHull( GetAbsOrigin(), vMoveTargetPos, GetHullMins(), GetHullMaxs(), GetAITraceMask_BrushOnly(), this, COLLISION_GROUP_NONE, &tr );
 
 			float fTargetDist = (1.0f-tr.fraction)*(GetAbsOrigin() - vMoveTargetPos).Length();
 			

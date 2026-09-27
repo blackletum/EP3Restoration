@@ -21,8 +21,8 @@
 #include "entitylist.h"
 #include "ai_task.h"
 #include "activitylist.h"
-#include "engine/IEngineSound.h"
-#include "npc_BaseZombie.h"
+#include "engine/ienginesound.h"
+#include "npc_basezombie.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -649,28 +649,28 @@ void CNPC_PoisonZombie::BreatheOffShort( void )
 void CNPC_PoisonZombie::HandleAnimEvent( animevent_t *pEvent )
 {
 	
-	if ( pEvent->Event() == AE_ZOMBIE_POISON_PICKUP_CRAB)
+	if ( pEvent->Event() == AE_ZOMBIE_POISON_PICKUP_CRAB )
 	{
 		EnableCrab( m_nThrowCrab, false );
 		SetBodygroup( ZOMBIE_BODYGROUP_THROW, 1 );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_POISON_THROW_WARN_SOUND)
+	if ( pEvent->Event() == AE_ZOMBIE_POISON_THROW_WARN_SOUND )
 	{
 		BreatheOffShort();
 		EmitSound( "NPC_PoisonZombie.ThrowWarn" );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_POISON_THROW_SOUND)
+	if ( pEvent->Event() == AE_ZOMBIE_POISON_THROW_SOUND )
 	{
 		BreatheOffShort();
 		EmitSound( "NPC_PoisonZombie.Throw" );
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_POISON_THROW_CRAB)
+	if ( pEvent->Event() == AE_ZOMBIE_POISON_THROW_CRAB )
 	{
 		SetBodygroup( ZOMBIE_BODYGROUP_THROW, 0 );
 
@@ -716,7 +716,7 @@ void CNPC_PoisonZombie::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->Event() == AE_ZOMBIE_POISON_SPIT)
+	if ( pEvent->Event() == AE_ZOMBIE_POISON_SPIT )
 	{
 		Vector forward;
 		QAngle qaPunch( 45, random->RandomInt(-5, 5), random->RandomInt(-5, 5) );

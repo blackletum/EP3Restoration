@@ -116,12 +116,12 @@ public:
 LINK_ENTITY_TO_CLASS(npc_grenade_teleport, CGrenadeTeleport);
 
 
-CBaseGrenade* Telegrenade_Create(const Vector& position, const QAngle& angles, const Vector& velocity, const AngularImpulse& angVelocity, CBaseEntity* pOwner)
+CBaseGrenade* ShootTeleportProjectileNPC(const Vector& position, const Vector& velocity, CBaseEntity* pOwner)
 {
 	// Don't set the owner here, or the player can't interact with grenades he's thrown
-	CGrenadeTeleport* pGrenade = (CGrenadeTeleport*)CBaseEntity::Create("npc_grenade_teleport", position, angles, pOwner);
+	CGrenadeTeleport* pGrenade = (CGrenadeTeleport*)CBaseEntity::Create("npc_grenade_teleport", position, vec3_angle, pOwner);
 
-	pGrenade->SetVelocity(velocity, angVelocity);
+	pGrenade->SetVelocity(velocity, vec3_origin);//, angVelocity);
 	pGrenade->SetThrower(ToBaseCombatCharacter(pOwner));
 	pGrenade->m_takedamage = DAMAGE_EVENTS_ONLY;
 
@@ -207,6 +207,8 @@ void CWeaponTeleport::Spawn()
 }*/
 
 ConVar teleport_velocity_multiplier("teleport_velocity_multiplier","1000.0");
+ConVar sk_teleport_projectile_rechargetime("sk_teleport_projectile_rechargetime", "1.0");//theaperturecat todo use this
+ConVar dev_test_fire_teleport_projectile("dev_test_fire_teleport_projectile", "1");
 
 void CWeaponTeleport::PrimaryAttack(void)
 {
@@ -223,6 +225,52 @@ void CWeaponTeleport::PrimaryAttack(void)
 
 		Vector velocity = forward * teleport_velocity_multiplier.GetFloat();
 
-		m_hTeleportGrenade = Telegrenade_Create(vecShoot, vec3_angle, velocity, vec3_origin, pOwner);
+		m_hTeleportGrenade = ShootTeleportProjectileNPC(vecShoot, velocity, pOwner);
 	}
+}
+
+void FireTeleportProjectileFn()
+{
+	CBasePlayer* pOwner = UTIL_GetLocalPlayer();
+	if (!pOwner)
+		return;
+	Vector vecShoot = pOwner->Weapon_ShootPosition();
+
+	Vector forward;
+
+	pOwner->EyeVectors(&forward);
+
+	Vector velocity = forward * teleport_velocity_multiplier.GetFloat();
+
+	ShootTeleportProjectileNPC(vecShoot, velocity, pOwner);
+}
+
+
+
+
+
+
+//theaperturecat put these somewhere else
+
+int	g_interactionAdvisorImmobilize = 0;
+int	g_interactionAdvisorRelease = 0;
+
+bool AdvisorRoaming_IsPullingPlayer(CBasePlayer*)
+{
+	return false;
+}
+
+bool AdvisorRoaming_RemapPlayerPhysDmg(CBasePlayer*, const CTakeDamageInfo& info, CTakeDamageInfo& dmgNew)
+{
+	return false;
+}
+
+bool Advisor_IsLevitating()
+{
+	return false;
+}
+
+bool Advisor_AllowCooperation(bool)
+{
+	return false;
 }

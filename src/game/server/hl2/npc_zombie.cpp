@@ -9,13 +9,13 @@
 #include "doors.h"
 
 #include "simtimer.h"
-#include "npc_BaseZombie.h"
+#include "npc_basezombie.h"
 #include "ai_hull.h"
 #include "ai_navigator.h"
 #include "ai_memory.h"
 #include "gib.h"
 #include "soundenvelope.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "ammodef.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -148,7 +148,8 @@ public:
 	void FootscuffSound( bool fRightFoot );
 
 	const char *GetMoanSound( int nSound );
-	
+	void InputRiseFromGround( inputdata_t &inputdata );
+
 public:
 	DEFINE_CUSTOM_AI;
 
@@ -491,6 +492,7 @@ void CZombie::SetZombieModel( void )
 		SetHullType( HULL_HUMAN );
 	}
 
+// We don't want a headcrab
 	SetBodygroup( ZOMBIE_BODYGROUP_HEADCRAB, !m_fIsHeadless );
 
 	SetHullSizeNormal( true );
@@ -907,7 +909,6 @@ void CZombie::BuildScheduleTestBits( void )
 	}
 }
 
-	
 //=============================================================================
 
 AI_BEGIN_CUSTOM_NPC( npc_zombie, CZombie )

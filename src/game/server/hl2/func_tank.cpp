@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ====
+//========= Copyright (c) 1996-2005, Valve Corporation, All rights reserved. ====
 //
 // Purpose: 
 //
@@ -6,8 +6,8 @@
 
 #include "cbase.h"
 #include "func_tank.h"
-#include "Sprite.h"
-#include "EnvLaser.h"
+#include "sprite.h"
+#include "envlaser.h"
 #include "basecombatweapon.h"
 #include "explode.h"
 #include "eventqueue.h"
@@ -18,14 +18,14 @@
 #include "ndebugoverlay.h"
 #include "grenade_beam.h"
 #include "vstdlib/random.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 #include "physics_cannister.h"
 #include "decals.h"
 #include "shake.h"
 #include "particle_smokegrenade.h"
 #include "player.h"
 #include "entitylist.h"
-#include "IEffects.h"
+#include "ieffects.h"
 #include "ai_basenpc.h"
 #include "ai_behavior_functank.h"
 #include "weapon_rpg.h"
@@ -492,7 +492,7 @@ void CFuncTank::NPC_FindController( void )
 			}
 
 			trace_t tr;
-			UTIL_TraceEntity( pNPC, vecMountPos, vecMountPos, MASK_NPCSOLID, this, pNPC->GetCollisionGroup(), &tr );
+			UTIL_TraceEntity( pNPC, vecMountPos, vecMountPos, pNPC->GetAITraceMask(), this, pNPC->GetCollisionGroup(), &tr );
 			if( tr.startsolid || tr.fraction < 1.0 )
 			{
 				// Don't mount the tank if someone/something is located on the control point.
@@ -905,6 +905,11 @@ void CFuncTank::Precache( void )
 	if ( m_iEffectHandling == EH_COMBINE_CANNON )
 	{
 		PrecacheScriptSound( "NPC_Combine_Cannon.FireBullet" );
+		PrecacheEffect( "ChopperMuzzleFlash" );
+	}
+	else
+	{
+		PrecacheEffect( "MuzzleFlash" );
 	}
 }
 
@@ -2797,6 +2802,10 @@ void CFuncTankAirboatGun::Precache( void )
 	BaseClass::Precache();
 	PrecacheScriptSound( "Airboat.FireGunLoop" );
 	PrecacheScriptSound( "Airboat.FireGunRevDown");
+	if ( m_iszAirboatGunModel != NULL_STRING )
+	{
+		PrecacheEffect( "AirboatMuzzleFlash" );
+	}
 	CreateSounds();
 }
 
@@ -3065,7 +3074,7 @@ void CFuncTankAPCRocket::Precache( void )
 	UTIL_PrecacheOther( "apc_missile" );
 
 	PrecacheScriptSound( "PropAPC.FireCannon" );
-
+	PrecacheEffect( "AirboatGunImpact" );
 	CFuncTank::Precache();
 }
 
@@ -3413,6 +3422,7 @@ void CMortarShell::Precache()
 
 	PrecacheScriptSound( "Weapon_Mortar.Impact" );
 	PrecacheMaterial( "effects/ar2ground2" );
+	PrecacheEffect( "AR2Explosion" );
 
 	if ( NULL_STRING != m_warnSound )
 	{

@@ -17,7 +17,7 @@
 #include "weapon_tripwire.h"
 #include "npcevent.h"
 #include "in_buttons.h"
-#include "engine/IEngineSound.h"
+#include "engine/ienginesound.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
